@@ -1,0 +1,44 @@
+import os
+import secrets
+from flask import Flask
+from flask_login import LoginManager
+from flask_bcrypt import Bcrypt
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
+
+# Load .env file
+load_dotenv()
+
+# The APP + Settings
+app = Flask(__name__, template_folder='../frontend')
+app.secret_key = os.getenv("APP_SECRET_KEY")
+
+# MongoDB setup
+MONGO_HOST = os.getenv("MONGO_HOST")
+MONGO_PORT = os.getenv("MONGO_PORT")
+MONGO_SECRET = os.getenv("MONGO_SECRET")
+client = MongoClient(f'mongodb://{MONGO_SECRET}@{MONGO_HOST}/?authSource=admin&retryWrites=true&w=majority', port=int(MONGO_PORT))
+db = client["app"]
+
+# Set the login implementation
+login_manager = LoginManager()
+login_manager.init_app(app)
+# (optional) Unauthorized users redirected properly
+login_manager.login_view = "login"
+
+# Set Bcrypt
+bcrypt = Bcrypt(app)
+
+# Set login callback and routes
+import login
+
+# Set general routes for the flask app
+import routes
+
+
+
+# MAIN
+if __name__ == "__main__":
+    app.run(ssl_context='adhoc')
+
