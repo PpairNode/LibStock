@@ -1,7 +1,8 @@
 // src/pages/LoginPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "../api/axiosConfig"; // Adjust the path if needed
+import axios from "../api/axiosConfig";
+import "./LoginPage.css"
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -43,33 +44,38 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto", padding: "1rem" }}>
-      <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    <div className="login-container">
+      <form className="login-form" onSubmit={handleLogin}>
+        <h2 className="login-title">Login</h2>
 
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>Username</label>
+        {error && <p className="login-error">{error}</p>}
+
+        <div className="form-group">
+          <label htmlFor="username">Username</label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
             autoFocus
+            className="form-input"
           />
         </div>
 
-        <div style={{ marginTop: "1rem" }}>
-          <label>Password</label>
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="form-input"
           />
         </div>
 
-        <button type="submit" style={{ marginTop: "1rem" }}>
+        <button type="submit" className="login-button">
           Login
         </button>
       </form>
