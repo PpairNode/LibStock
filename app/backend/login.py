@@ -41,14 +41,6 @@ def login():
         return jsonify({ "message": "Invalid credentials" }), 401
     return jsonify({ "message": "Please log in", "login_required": True }), 200
 
-@app.route("/api/dashboard", methods=["GET"])
-@login_required
-def dashboard():
-    return jsonify({
-        "message": f"Welcome {current_user.username}!",
-        "username": current_user.username
-    }), 200
-
 @app.route("/api/logout", methods=["POST"])
 @login_required
 def logout():

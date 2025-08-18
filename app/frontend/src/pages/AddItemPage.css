@@ -1,0 +1,29 @@
+.item-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.form-row label {
+  width: 150px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea {
+  flex: 1;
+  padding: 0.4rem;
+  font-size: 1rem;
+}
+
+textarea {
+  resize: vertical;
+}

@@ -1,11 +1,17 @@
 // src/pages/DashboardPage.jsx
 import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "../api/axiosConfig";
 import "./DashboardPage.css";
 
 
 
-const requiredColumns = ["name", "category", "value", "item_date"];
+const requiredColumns = [
+  { key: "name", label: "Name" },
+  { key: "category", label: "Category" },
+  { key: "value", label: "Value" },
+  { key: "item_date", label: "Item Date" },
+];
 const optionalColumns = [
   { key: "description", label: "Description" },
   { key: "tags", label: "Tags" },
@@ -25,6 +31,8 @@ const DashboardPage = () => {
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
 
+  const navigate = useNavigate();
+  
   const [visibleColumns, setVisibleColumns] = useState(
     optionalColumns.map((col) => col.key) // tick all optional by default
   );
@@ -36,12 +44,18 @@ const DashboardPage = () => {
   };
 
   useEffect(() => {
+
     const fetchItems = async () => {
       try {
         const response = await axios.get("/api/items");
         setItems(response.data);
-      } catch (err) {
-        setError("Could not load items");
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          window.location.href = "/login";
+        } else {
+          console.error("Error fetching dashboard columns:", error.message);
+          navigate("/error");
+        }
       }
     };
 
@@ -59,6 +73,7 @@ const DashboardPage = () => {
           window.location.href = "/login";
         } else {
           console.error("Error fetching dashboard:", error.message);
+          navigate("/error");
         }
       }
     };
@@ -70,6 +85,9 @@ const DashboardPage = () => {
   return (
     <div className="dashboard-container">
       <h2>Dashboard | <strong>{message}</strong> (logged in as: {username})</h2>
+      <div className="button-group">
+          <Link to="/api/item/add" className="nav-button">Add Item</Link>
+      </div>
 
       <div className="column-selector">
         <h4>Show optional columns:</h4>
@@ -91,10 +109,9 @@ const DashboardPage = () => {
           <table className="item-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Value</th>
-                <th>Item Date</th>
+                {requiredColumns.map(
+                  (col) => <th key={col.key}>{col.label}</th>
+                )}
                 {optionalColumns.map(
                   (col) =>
                     visibleColumns.includes(col.key) && <th key={col.key}>{col.label}</th>

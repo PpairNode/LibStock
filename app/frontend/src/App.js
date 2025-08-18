@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import ApiPage from "./pages/ApiPage";
+import logo from "./logo.svg"; // adjust path if logo is elsewhere
+import "./App.css"; // import the CSS you pasted
+import ErrorPage from "./pages/ErrorPage";
 import LoginPage from "./pages/LoginPage";
 import LogoutPage from "./pages/LogoutPage";
 import DashbordPage from "./pages/DashboardPage";
-import logo from "./logo.svg"; // adjust path if logo is elsewhere
-import "./App.css"; // import the CSS you pasted
+import ApiPage from "./pages/ApiPage";
+import AddItemPage from "./pages/AddItemPage";
+
 
 const RootPage = () => {
   const [nyTime, setNyTime] = useState("");
@@ -53,10 +56,12 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" element={<RootPage />} />
-        <Route path="/api" element={<ApiPage />} />
+        <Route path="/error" element={<ErrorPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/logout" element={<LogoutPage />} />
         <Route path="/dashboard" element={<DashbordPage />} />
+        <Route path="/api" element={<ApiPage />} />
+        <Route path="/api/item/add" element={<AddItemPage />} />
       </Routes>
     </Router>
   );
