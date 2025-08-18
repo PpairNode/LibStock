@@ -1,5 +1,5 @@
 from bson import ObjectId
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, jsonify
 from flask_login import login_user, login_required, logout_user, UserMixin, current_user
 from __main__ import login_manager, db, app, bcrypt
 
@@ -20,31 +20,36 @@ def load_user(user_id):
     return None
 
 # Routes
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/api/login", methods=["GET", "POST"])
 def login():
+    print("User is trying to login...")
     if current_user.is_authenticated == True:
         print(f"User [{current_user.username}] is already authenticated!")
-        return redirect(url_for("dashboard"))
+        return jsonify({ "authenticated": True, "redirect": "/dashboard" }), 200
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        print("Entered login! Getting data...")
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
+        print(f"Data retrieved: username={username} password={password}")
         user_data = db.users.find_one({ "username": username })
         if user_data and bcrypt.check_password_hash(pw_hash=user_data["password"], password=password):
             user = User(user_data)
             if login_user(user):
                 print(f"Login success for user: {user.username}!")
-                return redirect(url_for("dashboard"))
-        return "Invalid credentials", 401
-    return render_template("login.html")
+                return jsonify({ "message": "Login successful", "redirect": "/dashboard" }), 200
+        return jsonify({ "message": "Invalid credentials" }), 401
+    return jsonify({ "message": "Please log in", "login_required": True }), 200
 
-@app.route("/dashboard")
+@app.route("/api/dashboard", methods=["GET"])
 @login_required
 def dashboard():
-    print("Current user authenticated?", current_user.is_authenticated)
-    print("Current user ID:", current_user.get_id())
-    return render_template("dashboard.html", username=current_user.username)
+    return jsonify({
+        "message": f"Welcome {current_user.username}!",
+        "username": current_user.username
+    }), 200
 
-@app.route("/logout")
+@app.route("/api/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()

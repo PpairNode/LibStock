@@ -1,6 +1,7 @@
 import os
 import secrets
-from flask import Flask
+from flask import Flask, jsonify
+from flask_cors import CORS
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from pymongo import MongoClient
@@ -13,6 +14,9 @@ load_dotenv()
 # The APP + Settings
 app = Flask(__name__, template_folder='../frontend')
 app.secret_key = os.getenv("APP_SECRET_KEY")
+
+# Add cross origin cookies
+CORS(app, supports_credentials=True, origins=["https://localhost:3000"])
 
 # MongoDB setup
 MONGO_HOST = os.getenv("MONGO_HOST")
@@ -40,5 +44,5 @@ import routes
 
 # MAIN
 if __name__ == "__main__":
-    app.run(ssl_context='adhoc')
+    app.run(ssl_context='adhoc', debug=True)
 

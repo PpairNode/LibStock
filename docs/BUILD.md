@@ -18,6 +18,21 @@ sudo apt install -y mongodb-org
 sudo systemctl start mongod
 ```
 
+## Install React Project
+```bash
+npx create-react-app frontend
+cd frontend
+npm install react-router-dom
+npm audit fix  # If vuln errors
+npm install react-scripts --save  # If missing
+npm install axios
+```
+
+## Start frontend server
+```bash
+HTTPS=true npm start
+```
+
 ### Connect with mongod
 ```bash
 mongosh
