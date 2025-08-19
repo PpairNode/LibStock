@@ -222,7 +222,7 @@ const DashboardPage = () => {
 
           <div
             style={{
-              flex: "0 0 30%",
+              flex: 1,
               border: "1px solid #ccc",
               borderRadius: "8px",
               padding: "1rem",
