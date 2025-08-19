@@ -31,6 +31,10 @@ login_manager.init_app(app)
 # (optional) Unauthorized users redirected properly
 login_manager.login_view = "login"
 
+@login_manager.unauthorized_handler
+def unauthorized():
+    return jsonify({ "error": "Unauthorized" }), 401
+
 # Set Bcrypt
 bcrypt = Bcrypt(app)
 

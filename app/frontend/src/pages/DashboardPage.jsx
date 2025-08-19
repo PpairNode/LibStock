@@ -54,14 +54,19 @@ const DashboardPage = () => {
   };
 
   useEffect(() => {
-
     const fetchItems = async () => {
       try {
         const response = await axios.get("/api/items");
+        // Check if data is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
+        }
         setItems(response.data);
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          window.location.href = "/login";
+        const status = error.response?.status;
+        if (status === 401) {
+          console.error("User not authenticated");
+          navigate("/login");
         } else {
           console.error("Error fetching dashboard columns:", error.message);
           navigate("/error");
@@ -70,7 +75,7 @@ const DashboardPage = () => {
     };
 
     fetchItems();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
