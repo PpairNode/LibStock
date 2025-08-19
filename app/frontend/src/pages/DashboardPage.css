@@ -81,3 +81,60 @@
   color: white;
   border-color: #007bff;
 }
+
+
+.delete-button {
+  padding: 4px 10px;
+  background-color: #f44338;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.delete-button:hover {
+  background-color: #c62828;
+}
+
+.update-button {
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Hover styles */
+.update-button:hover {
+  background-color: #0056b3;
+}
+
+/* Make sure <button> doesn't carry default user-agent styles */
+button.update-button {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+/* Reapply shared styles */
+button.update-button {
+  padding: 4px 10px;
+  text-decoration: none;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}

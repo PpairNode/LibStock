@@ -1,0 +1,184 @@
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "../api/axiosConfig";
+import "./AddItemPage.css"; // reuse your existing styles
+
+const EditItemPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const today = new Date().toISOString().split("T")[0];
+
+  const [categories, setCategories] = useState([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    value: 0,
+    item_date: today,
+    location: "",
+    creator: "",
+    tags: "",
+    image_path: "",
+    category: "",
+    comment: "",
+    condition: "",
+    possessor: "",
+  });
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchItem = async () => {
+      try {
+        const res = await axios.get(`/api/item/update/${id}`);
+        const item = res.data;
+
+        setFormData({
+          name: item.name || "",
+          description: item.description || "",
+          value: item.value || 0,
+          item_date: item.item_date?.slice(0, 10) || today,
+          location: item.location || "",
+          creator: item.creator || "",
+          tags: item.tags?.join(", ") || "",
+          image_path: item.image_path || "",
+          category: item.category || "",
+          comment: item.comment || "",
+          condition: item.condition || "",
+          possessor: item.possessor || "",
+        });
+      } catch (err) {
+        console.error("Error fetching item for update:", err.message);
+        navigate("/error");
+      }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("/api/item/categories");
+        setCategories(res.data.categories);
+      } catch (err) {
+        console.error("Error fetching categories:", err.message);
+        navigate("/error");
+      }
+    };
+
+    fetchItem();
+    fetchCategories();
+  }, [id, navigate, today]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const updatedItem = {
+      ...formData,
+      tags: formData.tags.split(",").map(tag => tag.trim()).filter(Boolean),
+    };
+
+    try {
+      await axios.post(`/api/item/update/${id}`, updatedItem);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Update failed:", err.message);
+      setError("Failed to update item.");
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: "600px", margin: "auto", padding: "1rem" }}>
+      <h2>Edit Item</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <form onSubmit={handleSubmit} className="item-form-grid">
+        <div className="form-row">
+          <label htmlFor="possessor">Possessor</label>
+          <input
+            id="possessor"
+            name="possessor"
+            value={formData.possessor}
+            onChange={handleChange}
+            style={{ backgroundColor: "#f0f0f0" }}
+            required
+          />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="name">Name*</label>
+          <input id="name" name="name" value={formData.name} onChange={handleChange} required />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="description">Description</label>
+          <textarea id="description" name="description" value={formData.description} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="value">Value*</label>
+          <input id="value" name="value" type="number" value={formData.value} onChange={handleChange} required />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="item_date">Item Date*</label>
+          <input id="item_date" name="item_date" type="date" value={formData.item_date} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="location">Location</label>
+          <input id="location" name="location" value={formData.location} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="creator">Author/Inventor</label>
+          <input id="creator" name="creator" value={formData.creator} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="tags">Tags (comma-separated)</label>
+          <input id="tags" name="tags" value={formData.tags} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="image_path">Image Path</label>
+          <input id="image_path" name="image_path" value={formData.image_path} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="category">Category*</label>
+          <select id="category" name="category" value={formData.category} onChange={handleChange} required>
+            <option value="">-- Select a Category --</option>
+            {categories.map((cat, idx) => (
+              <option key={idx} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="comment">Comment</label>
+          <textarea id="comment" name="comment" value={formData.comment} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="condition">Condition</label>
+          <select id="condition" name="condition" value={formData.condition} onChange={handleChange}>
+            <option value="">-- Select a Condition --</option>
+            <option value="New">New</option>
+            <option value="Very Good">Very Good</option>
+            <option value="Good">Good</option>
+            <option value="Used">Used</option>
+            <option value="Damaged">Damaged</option>
+            <option value="Heavily Damaged">Heavily Damaged</option>
+          </select>
+        </div>
+
+        <div style={{ textAlign: "right", marginTop: "1rem" }}>
+          <button type="submit">Update Item</button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default EditItemPage;

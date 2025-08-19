@@ -6,10 +6,10 @@ import "./App.css"; // import the CSS you pasted
 import ErrorPage from "./pages/ErrorPage";
 import LoginPage from "./pages/LoginPage";
 import LogoutPage from "./pages/LogoutPage";
-import DashbordPage from "./pages/DashboardPage";
-import ApiPage from "./pages/ApiPage";
-import AddItemPage from "./pages/AddItemPage";
 import PrivateRoute from "./pages/PrivateRoute";
+import DashbordPage from "./pages/DashboardPage";
+import AddItemPage from "./pages/AddItemPage";
+import EditItemPage from "./pages/EditItemPage";
 
 
 const RootPage = () => {
@@ -86,8 +86,8 @@ const App = () => {
         <Route path="/" element={<PrivateRoute><Outlet /></PrivateRoute>}>
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/dashboard" element={<DashbordPage />} />
-          <Route path="/api" element={<ApiPage />} />
-          <Route path="/api/item/add" element={<AddItemPage />} />
+          <Route path="/item/add" element={<AddItemPage />} />
+          <Route path="/item/update/:id" element={<EditItemPage />} />
         </Route>
 
         {/* Catch-all route (last as it uses wildcards) */}

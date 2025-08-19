@@ -13,6 +13,7 @@ const requiredColumns = [
   { key: "item_date", label: "Item Date" },
 ];
 const optionalColumns = [
+  { key: "possessor", label: "Possessor" },
   { key: "description", label: "Description" },
   { key: "tags", label: "Tags" },
   { key: "location", label: "Location" },
@@ -29,12 +30,33 @@ const DashboardPage = () => {
   const [username, setUsername] = useState("");
 
   const [items, setItems] = useState([]);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
 
   const [selectedItem, setSelectedItem] = useState(null);
 
   const navigate = useNavigate();
   
+  const handleDelete = async (itemId) => {
+    // This is a prompting to confirm you want to delete. For now do not set
+    // if (!window.confirm("Are you sure you want to delete this item?")) return;
+
+    try {
+      await axios.delete("/api/item/delete", {
+        data: { id: itemId },
+      });
+
+      // Remove item from local state
+      setItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
+    } catch (error) {
+      console.error("Error deleting item:", error.message);
+      alert("Failed to delete item.");
+    }
+  };
+
+  // const handleUpdate = (item) => {
+  //   navigate(`/item/update/${item._id}`, { state: { item } });
+  // };
+
   const [visibleColumns, setVisibleColumns] = useState(() => {
     const saved = localStorage.getItem("visibleColumns");
     if (saved) {
@@ -55,6 +77,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchItems = async () => {
+      console.log("Fetching items...")
       try {
         const response = await axios.get("/api/items");
         // Check if data is an array
@@ -94,7 +117,7 @@ const DashboardPage = () => {
     };
 
     fetchDashboard();
-  }, []);
+  }, [navigate]);
   
 
 
@@ -103,7 +126,7 @@ const DashboardPage = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2>Dashboard | <strong>{message}</strong> (logged in as: {username})</h2>
         <div className="button-group">
-            <Link to="/api/item/add" className="nav-button">Add Item</Link>
+            <Link to="/item/add" className="nav-button">Add Item</Link>
         </div>
       </div>
 
@@ -136,6 +159,8 @@ const DashboardPage = () => {
                       (col) =>
                         visibleColumns.includes(col.key) && <th key={col.key}>{col.label}</th>
                     )}
+                    <th>Delete</th>
+                    <th>Update</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -167,7 +192,26 @@ const DashboardPage = () => {
                               : item[col.key]}
                           </td>
                         )
-                    )}
+                      )}
+                      {/* DELETE button */}
+                      <td>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // prevent row click
+                            handleDelete(item._id);
+                          }}
+                          className="delete-button"
+                        >
+                          Delete
+                        </button>
+                      </td>
+
+                      {/* UPDATE button */}
+                      <td>
+                        <Link to={`/item/update/${item._id}`} className="update-button" role="button">
+                          Update
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -10,6 +10,7 @@ const AddItemPage = () => {
 
 
   const [formData, setFormData] = useState({
+    possessor: "",
     name: "",
     description: "",
     value: 0,
@@ -55,8 +56,10 @@ const AddItemPage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        console.log("Fetching user...");
         const res = await axios.get("/api/user");
         const username = res.data.username;
+        console.log("Fetched user:", username);
         setFormData((prev) => ({ ...prev, possessor: username }));
       } catch (err) {
         console.error("Failed to fetch user info", err.message);
@@ -65,7 +68,7 @@ const AddItemPage = () => {
     };
 
     fetchUser();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -79,7 +82,7 @@ const AddItemPage = () => {
     };
 
     fetchCategories();
-  }, []);
+  }, [navigate]);
 
   return (
     <div style={{ maxWidth: "600px", margin: "auto", padding: "1rem" }}>
@@ -105,7 +108,7 @@ const AddItemPage = () => {
 
         <div className="form-row">
             <label htmlFor="value">Value*</label>
-            <input id="value" name="value" type="number" value={formData.value} onChange={handleChange} />
+            <input id="value" name="value" type="number" value={formData.value} onChange={handleChange} required />
         </div>
 
         <div className="form-row">
