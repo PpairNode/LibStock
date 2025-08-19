@@ -23,13 +23,39 @@ def get_current_user():
     })
 
 
-# TODO: add a route for adding new categories
-@app.route("/api/item/categories", methods=["GET"])
+@app.route("/api/categories", methods=["GET"])
 @login_required
 def get_item_categories():
-    return jsonify({
-        "categories": ["BD", "Computer", "Militaria", "Movies", "Books"]
-    })
+    categories = list(db.categories.find())
+    for cat in categories:
+        cat["_id"] = str(cat["_id"])  # Convert ObjectId to string
+    print(f"CATEGORIES: {categories}")
+    return jsonify(categories), 200
+
+
+@app.route("/api/category/add", methods=["GET", "POST"])
+@login_required
+def add_category():
+    if request.method == "GET":
+        template = {
+            "name": "",
+        }
+        return jsonify(template), 200
+    
+    else:  # POST
+        data = request.get_json()
+
+        required_fields = ["name"]
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing fields"}), 400
+
+        item = {
+            "name": data["name"]
+        }
+
+        result = db.categories.insert_one(item)
+        return jsonify({ "message": "Category added", "id": str(result.inserted_id) }), 201
+
 
 
 @app.route("/api/dashboard", methods=["GET"])

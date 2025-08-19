@@ -73,8 +73,9 @@ const AddItemPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/api/item/categories");
-        setCategories(res.data.categories);
+        const res = await axios.get("/api/categories");
+        console.log("Categories:", res.data)
+        setCategories(res.data);
       } catch (err) {
         console.error("Failed to fetch user info", err.message);
         navigate('/error')
@@ -147,8 +148,8 @@ const AddItemPage = () => {
             >
                 <option value="">-- Select a Category --</option>
                 {categories.map((cat, idx) => (
-                <option key={idx} value={cat}>
-                    {cat}
+                <option key={idx} value={cat.name}>
+                    {cat.name}
                 </option>
                 ))}
             </select>

@@ -53,8 +53,8 @@ const EditItemPage = () => {
 
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/api/item/categories");
-        setCategories(res.data.categories);
+        const res = await axios.get("/api/categories");
+        setCategories(res.data);
       } catch (err) {
         console.error("Error fetching categories:", err.message);
         navigate("/error");
@@ -150,7 +150,7 @@ const EditItemPage = () => {
           <select id="category" name="category" value={formData.category} onChange={handleChange} required>
             <option value="">-- Select a Category --</option>
             {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>{cat}</option>
+              <option key={idx} value={cat.name}>{cat.name}</option>
             ))}
           </select>
         </div>

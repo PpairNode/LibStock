@@ -127,6 +127,7 @@ const DashboardPage = () => {
         <h2>Dashboard | <strong>{message}</strong> (logged in as: {username})</h2>
         <div className="button-group">
             <Link to="/item/add" className="nav-button">Add Item</Link>
+            <Link to="/category/add" className="nav-button">Add Category</Link>
         </div>
       </div>
 

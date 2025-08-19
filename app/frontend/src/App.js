@@ -10,6 +10,7 @@ import PrivateRoute from "./pages/PrivateRoute";
 import DashbordPage from "./pages/DashboardPage";
 import AddItemPage from "./pages/AddItemPage";
 import EditItemPage from "./pages/EditItemPage";
+import AddCategoryPage from "./pages/AddCategoryPage";
 
 
 const RootPage = () => {
@@ -88,6 +89,7 @@ const App = () => {
           <Route path="/dashboard" element={<DashbordPage />} />
           <Route path="/item/add" element={<AddItemPage />} />
           <Route path="/item/update/:id" element={<EditItemPage />} />
+          <Route path="/category/add" element={<AddCategoryPage />} />
         </Route>
 
         {/* Catch-all route (last as it uses wildcards) */}
