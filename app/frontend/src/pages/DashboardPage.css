@@ -9,12 +9,20 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #fff;
+
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 .item-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1000px; /* ensures horizontal scroll */
+}
+
+.item-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .item-table th,

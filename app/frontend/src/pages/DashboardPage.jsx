@@ -31,11 +31,21 @@ const DashboardPage = () => {
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
 
+  const [selectedItem, setSelectedItem] = useState(null);
+
   const navigate = useNavigate();
   
-  const [visibleColumns, setVisibleColumns] = useState(
-    optionalColumns.map((col) => col.key) // tick all optional by default
-  );
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    const saved = localStorage.getItem("visibleColumns");
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return optionalColumns.map((col) => col.key); // default: all optional columns visible
+  });
+
+  useEffect(() => {
+    localStorage.setItem("visibleColumns", JSON.stringify(visibleColumns));
+  }, [visibleColumns]);
 
   const handleCheckboxChange = (key) => {
     setVisibleColumns((prev) =>
@@ -80,17 +90,20 @@ const DashboardPage = () => {
 
     fetchDashboard();
   }, []);
+  
 
 
   return (
     <div className="dashboard-container">
-      <h2>Dashboard | <strong>{message}</strong> (logged in as: {username})</h2>
-      <div className="button-group">
-          <Link to="/api/item/add" className="nav-button">Add Item</Link>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2>Dashboard | <strong>{message}</strong> (logged in as: {username})</h2>
+        <div className="button-group">
+            <Link to="/api/item/add" className="nav-button">Add Item</Link>
+        </div>
       </div>
 
       <div className="column-selector">
-        <h4>Show optional columns:</h4>
+        <strong>Optional columns </strong>
         {optionalColumns.map((col) => (
           <button
             key={col.key}
@@ -105,49 +118,91 @@ const DashboardPage = () => {
       {error ? (
         <p style={{ color: "red" }}>{error}</p>
       ) : (
-        <div className="table-wrapper">
-          <table className="item-table">
-            <thead>
-              <tr>
-                {requiredColumns.map(
-                  (col) => <th key={col.key}>{col.label}</th>
+        <div style={{ display: "flex", alignItems: "flex-start" }}>
+          <div style={{ flex: "0 0 70%" }}>
+            <div className="table-wrapper">
+              <table className="item-table">
+                <thead>
+                  <tr>
+                    {requiredColumns.map(
+                      (col) => <th key={col.key}>{col.label}</th>
+                    )}
+                    {optionalColumns.map(
+                      (col) =>
+                        visibleColumns.includes(col.key) && <th key={col.key}>{col.label}</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => (
+                    <tr 
+                      key={idx}
+                      onClick={() => setSelectedItem(item)}
+                      style={{ cursor: "pointer", backgroundColor: selectedItem === item ? "#f0f0f0" : "white" }}
+                    >
+                      <td>{item.name}</td>
+                      <td>{item.category}</td>
+                      <td>${item.value}</td>
+                      <td>{item.item_date?.slice(0, 10)}</td>
+                      {optionalColumns.map(
+                      (col) =>
+                        visibleColumns.includes(col.key) && (
+                          <td key={col.key}>
+                            {col.key === "tags"
+                              ? item[col.key]?.join(", ")
+                              : col.key === "image_path"
+                              ? (
+                                  <img
+                                    src={item[col.key]}
+                                    alt="Item"
+                                    width="50"
+                                    style={{ borderRadius: "4px" }}
+                                  />
+                                )
+                              : item[col.key]}
+                          </td>
+                        )
+                    )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            style={{
+              flex: "0 0 30%",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+              padding: "1rem",
+              minHeight: "300px",
+            }}
+          >
+            {selectedItem ? (
+              <>
+                <h3>Item Details</h3>
+                <p><strong>Name:</strong> {selectedItem.name}</p>
+                <p><strong>Description:</strong> {selectedItem.description}</p>
+                <p><strong>Category:</strong> {selectedItem.category}</p>
+                <p><strong>Value:</strong> ${selectedItem.value}</p>
+                <p><strong>Date:</strong> {selectedItem.item_date}</p>
+                <p><strong>Location:</strong> {selectedItem.location}</p>
+                <p><strong>Creator:</strong> {selectedItem.creator}</p>
+                <p><strong>Possessor:</strong> {selectedItem.possessor}</p>
+                <p><strong>Tags:</strong> {selectedItem.tags?.join(", ")}</p>
+                <p><strong>Comment:</strong> {selectedItem.comment}</p>
+                <p><strong>Condition:</strong> {selectedItem.condition}</p>
+                {selectedItem.image_path && (
+                  <img src={selectedItem.image_path} alt="Item" style={{ maxWidth: "100%", marginTop: "1rem" }} />
                 )}
-                {optionalColumns.map(
-                  (col) =>
-                    visibleColumns.includes(col.key) && <th key={col.key}>{col.label}</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item._id}>
-                  <td>{item.name}</td>
-                  <td>{item.category}</td>
-                  <td>${item.value}</td>
-                  <td>{item.item_date?.slice(0, 10)}</td>
-                  {optionalColumns.map(
-                  (col) =>
-                    visibleColumns.includes(col.key) && (
-                      <td key={col.key}>
-                        {col.key === "tags"
-                          ? item[col.key]?.join(", ")
-                          : col.key === "image_path"
-                          ? (
-                              <img
-                                src={item[col.key]}
-                                alt="Item"
-                                width="50"
-                                style={{ borderRadius: "4px" }}
-                              />
-                            )
-                          : item[col.key]}
-                      </td>
-                    )
-                )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </>
+              ) : (
+              <p style={{ color: "#888", fontStyle: "italic" }}>
+                No item selected. Click a row to view details.
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>
