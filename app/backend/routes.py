@@ -25,11 +25,10 @@ def get_current_user():
 
 @app.route("/api/categories", methods=["GET"])
 @login_required
-def get_item_categories():
+def list_categories():
     categories = list(db.categories.find())
     for cat in categories:
         cat["_id"] = str(cat["_id"])  # Convert ObjectId to string
-    print(f"CATEGORIES: {categories}")
     return jsonify(categories), 200
 
 
@@ -57,6 +56,19 @@ def add_category():
         return jsonify({ "message": "Category added", "id": str(result.inserted_id) }), 201
 
 
+@app.route("/api/category/delete", methods=["DELETE"])
+@login_required
+def delete_category():
+    data = request.get_json()
+    item_id = data.get("id")
+    if not item_id:
+        return jsonify({"message": "Item ID is required"}), 400
+    result = db.categories.delete_one({"_id": ObjectId(item_id)})
+    if result.deleted_count == 1:
+        return jsonify({"message": "Item deleted successfully"}), 200
+    else:
+        return jsonify({"message": "Item not found"}), 404
+
 
 @app.route("/api/dashboard", methods=["GET"])
 @login_required
@@ -69,7 +81,7 @@ def dashboard():
 
 @app.route("/api/items", methods=["GET"])
 @login_required
-def get_items():
+def list_items():
     items = list(db.items.find())
     for item in items:
         item["_id"] = str(item["_id"])  # Convert ObjectId to string

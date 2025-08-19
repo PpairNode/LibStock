@@ -51,9 +51,9 @@
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
   display: flex;
-  justify-content: center; /* 👈 centers items horizontally */
+  justify-content: center; /* centers items horizontally */
   gap: 1rem;
-  flex-wrap: wrap; /* optional: wrap on small screens */
+  flex-wrap: wrap; /* to wrap on small screens */
 }
 
 .nav-button {
