@@ -13,7 +13,7 @@ const LoginPage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get("/api/login");
+        const response = await axios.get("/login");
         if (response.data?.authenticated && response.data.redirect) {
           navigate(response.data.redirect);
         }
@@ -30,15 +30,20 @@ const LoginPage = () => {
     setError(null);
 
     try {
-      const response = await axios.post("/api/login", { username, password });
+      const response = await axios.post("/login", { username, password });
       // Assuming backend responds with { message, redirect }
       const redirectUrl = response.data.redirect || "/dashboard";
       navigate(redirectUrl);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
+      console.error("Login error:", err);
+      if (err.response?.data?.message) {
+        setError(`Login failed 1. Please try again. Error: ${err.response.data.message}`);
+      } else if (err.response) {
+        setError(`Login failed with status ${err.response.status}.`);
+      } else if (err.request) {
+        setError("No response received from server.");
       } else {
-        setError("Login failed. Please try again.");
+        setError(`Error setting up request: ${err.message}`);
       }
     }
   };

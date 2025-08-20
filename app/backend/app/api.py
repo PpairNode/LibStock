@@ -10,15 +10,6 @@ from app.db import db
 api_bp = Blueprint("api", __name__)
 
 
-@api_bp.route("/")
-def hello():
-    print("Route triggered: hello")
-    return jsonify({
-        "message": "Hello from Flask!",
-        "status": "OK"
-    }), 200
-
-
 @api_bp.route("/user", methods=["GET"])
 @login_required
 def get_current_user():

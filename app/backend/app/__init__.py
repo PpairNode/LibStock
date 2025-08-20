@@ -16,7 +16,7 @@ def create_app():
     app.secret_key = os.getenv("APP_SECRET_KEY")
 
     # Add cross origin cookies
-    CORS(app, supports_credentials=True, origins=["https://localhost:3000"])
+    CORS(app, supports_credentials=True, resources={r"*": {"origins": [os.getenv("REACT_HOST_ORIGIN")]}})
 
     # Set bcrypt
     bcrypt.init_app(app)

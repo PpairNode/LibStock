@@ -1,11 +1,11 @@
 import axios from "./axiosConfig";
 
 export const login = async (username, password) => {
-  return axios.post("/api/login", { username, password });
+  return axios.post("/login", { username, password });
 };
 
 export const logout = async () => {
-  return axios.post("/api/logout");
+  return axios.post("/logout");
 };
 
 export const getDashboard = async () => {

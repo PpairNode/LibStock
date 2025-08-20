@@ -9,7 +9,7 @@ const LogoutPage = () => {
   useEffect(() => {
     const logout = async () => {
       try {
-        const response = await axios.post("/api/logout");
+        const response = await axios.post("/logout");
         console.log(response.data.message);
         navigate("/login");
       } catch (error) {
