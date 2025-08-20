@@ -1,8 +1,8 @@
 .dashboard-container {
+  min-height: 100%;
   padding: 2rem;
   background-color: #f5f7fa;
-  /*min-height: 100vh;*/
-  height: 100%;
+  box-sizing: border-box;
 }
 
 .table-wrapper {
@@ -138,4 +138,108 @@ button.update-button {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+}
+
+/* Filter bar wrapper */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* Each input group */
+.filter-group,
+.search-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 180px;
+}
+
+.filter-group label,
+.search-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.filter-group select,
+.search-group input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background-color: #f9f9f9;
+  transition: border 0.2s ease;
+}
+
+.filter-group select:focus,
+.search-group input:focus {
+  border-color: #007bff;
+  outline: none;
+  background-color: #fff;
+}
+
+.value-display {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #33cc33;
+  font-size: 0.95rem;
+  max-width: 200px;
+}
+
+.value-display .label {
+  font-size: 0.85rem;
+  color: #444;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.value-display .value {
+  font-size: 1.2rem;
+}
+
+.dashboard-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.dashboard-layout > .table-section {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+
+.dashboard-layout > .details-section {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 1000px) {
+  .dashboard-layout > .table-section {
+    flex: 0 0 70%;
+    max-width: 70%;
+  }
+
+  .dashboard-layout > .details-section {
+    flex: 1;
+    max-width: 30%;
+  }
+}
+
+.details-section {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 300px;
+  background-color: #fff;
 }

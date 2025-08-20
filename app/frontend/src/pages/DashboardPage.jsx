@@ -182,9 +182,9 @@ const DashboardPage = () => {
         ))}
       </div>
 
-      <div style={{ marginTop: "1rem", display: "flex", alignItems: "center", gap: "1rem" }}>
-        <div>
-          <label htmlFor="categoryFilter"><strong>Filter by Category:</strong></label>
+      <div className="filter-bar">
+        <div className="filter-group">
+          <label htmlFor="categoryFilter">Category:</label>
           <select
             id="categoryFilter"
             value={selectedCategory}
@@ -193,7 +193,6 @@ const DashboardPage = () => {
               setSelectedCategory(selected);
               localStorage.setItem("selectedCategory", selected);
             }}
-            style={{ marginLeft: "0.5rem", padding: "0.25rem", minWidth: "150px" }}
           >
             {categories.map((category) => (
               <option key={category} value={category}>{category}</option>
@@ -201,27 +200,27 @@ const DashboardPage = () => {
           </select>
         </div>
 
-        {/* Total Value */}
-        <div style={{ fontWeight: "bold" }}>
-          Total Value: ${totalValue.toFixed(2)}
+        <div className="search-group">
+          <label htmlFor="categoryFilter">Search:</label>
+          <input
+            type="text"
+            placeholder="Search items..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-      </div>
 
-      <div style={{ flex: 1 }}>
-        <input
-          type="text"
-          placeholder="Search name, tags, creator, possessor..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ padding: "0.4rem" }}
-        />
+        <div className="value-display">
+          <div className="label">Total Value</div>
+          <div className="value">${totalValue.toFixed(2)}</div>
+        </div>
       </div>
 
       {error ? (
         <p style={{ color: "red" }}>{error}</p>
       ) : (
-        <div style={{ display: "flex", alignItems: "flex-start" }}>
-          <div style={{ flex: "0 0 70%" }}>
+        <div className="dashboard-layout">
+          <div className="table-section">
             <div className="table-wrapper">
               <table className="item-table">
                 <thead>
@@ -298,15 +297,7 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div
-            style={{
-              flex: 1,
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "1rem",
-              minHeight: "300px",
-            }}
-          >
+          <div className="details-section">
             {selectedItem ? (
               <>
                 <h3>Item Details</h3>

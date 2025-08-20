@@ -21,8 +21,8 @@ This service is aimed to provide a storage unit for all items possessed by an en
 - Filter column system
 - Category filtering
 - Value calculator on filter
+- Search bar
 
 ## TODO
-- Search bar
 - Nice Header and Footer
 - Add back button
