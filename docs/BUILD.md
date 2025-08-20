@@ -1,11 +1,12 @@
-# Build APP
+# Certificate setup
 ## Create certificates
 ```bash
 mkdir tls
 openssl req -x509 -newkey rsa:4096 -keyout tls/key.pem -out tls/cert.pem -days 365 -nodes -subj "/CN=localhost"
 ```
 
-## Installation MongoDB
+# BACKEND
+## MongoDB Installation
 ```bash
 curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
    sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg \
@@ -18,22 +19,8 @@ sudo apt install -y mongodb-org
 sudo systemctl start mongod
 ```
 
-## Install React Project
-```bash
-npx create-react-app frontend
-cd frontend
-npm install react-router-dom
-npm audit fix  # If vuln errors
-npm install react-scripts --save  # If missing
-npm install axios
-```
-
-## Start frontend server
-```bash
-HTTPS=true npm start
-```
-
-### Connect with mongod
+## Setup DB
+- Update admin and setup password
 ```bash
 mongosh
 > use admin
@@ -43,22 +30,53 @@ mongosh
 > db.updateUser("admin",{roles:[{role:"readWrite",db:"app"}]})
 > exit
 sudo vim /etc/mongod.conf  # Add security:\n\tauthorization: enabled
-sudo systemclt restart mongod
+sudo systemctl restart mongod
+```
+
+- Hash password for user `test`
+```bash
+python3 -c "import bcrypt; print(bcrypt.hashpw(b'test', bcrypt.gensalt()).decode())"
+```
+
+- Connect to DB and with admin and add `test` user with the hash created
+```bash
 mongosh --port 27017 -u admin -p
 > use app
 app> db.users.insertOne({username: "test", password: "<BCRYPT-PASS-HASH>", role: "user", createdAt: new Date()})
 app> db.users.createIndex({ username: 1 }, { unique: true })
 ```
 
-Hash password with bcrypt
-```bash
-python3 -c "import bcrypt; print(bcrypt.hashpw(b'test', bcrypt.gensalt()).decode())"
+- Craft the .env file for environment var and secrets
+```toml
+MONGO_HOST="127.0.0.1"
+MONGO_PORT=27017
+MONGO_SECRET="admin:admin"
 ```
 
-## Installation
+
+## Flask Installation
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip3 install -r requirements.txt
+```
+
+## Run Flask server
+```bash
+python3 app/backend/app.py
+```
+
+# FRONTEND
+## Install dependencies:
+```bash
+npm install react-router-dom
+npm install react-scripts --save  # If missing
+npm install axios
+npm audit fix  # If vuln errors
+```
+
+## Start frontend server
+```bash
+HTTPS=true npm start
 ```
 
