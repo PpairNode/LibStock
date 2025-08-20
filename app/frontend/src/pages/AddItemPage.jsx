@@ -22,6 +22,8 @@ const AddItemPage = () => {
     category: "",
     comment: "",
     condition: "",
+    number: 1,
+    edition: "",
   });
 
   const [error, setError] = useState(null);
@@ -171,6 +173,16 @@ const AddItemPage = () => {
             <option value="Damaged">Damaged</option>
             <option value="Heavily Damaged">Heavily Damaged</option>
             </select>
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="number">Number</label>
+          <input id="number" name="number" type="number" value={formData.number} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="edition">Edition</label>
+          <input id="edition" name="edition" value={formData.edition} onChange={handleChange} />
         </div>
 
         <div style={{ textAlign: "right", marginTop: "1rem" }}>

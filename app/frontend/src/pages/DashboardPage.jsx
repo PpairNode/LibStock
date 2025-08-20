@@ -21,7 +21,8 @@ const optionalColumns = [
   { key: "condition", label: "Condition" },
   { key: "creation_date", label: "Created" },
   { key: "image_path", label: "Image" },
-  { key: "comment", label: "Comment" },
+  { key: "number", label: "Number" },
+  { key: "edition", label: "Edition" },
 ];
 
 
@@ -243,6 +244,8 @@ const DashboardPage = () => {
                 <p><strong>Tags:</strong> {selectedItem.tags?.join(", ")}</p>
                 <p><strong>Comment:</strong> {selectedItem.comment}</p>
                 <p><strong>Condition:</strong> {selectedItem.condition}</p>
+                <p><strong>Number:</strong> {selectedItem.number}</p>
+                <p><strong>Edition:</strong> {selectedItem.edition}</p>
                 {selectedItem.image_path && (
                   <img src={selectedItem.image_path} alt="Item" style={{ maxWidth: "100%", marginTop: "1rem" }} />
                 )}

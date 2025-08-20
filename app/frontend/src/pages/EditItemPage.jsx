@@ -22,6 +22,8 @@ const EditItemPage = () => {
     comment: "",
     condition: "",
     possessor: "",
+    number: 1,
+    edition: "",
   });
   const [error, setError] = useState(null);
 
@@ -44,6 +46,8 @@ const EditItemPage = () => {
           comment: item.comment || "",
           condition: item.condition || "",
           possessor: item.possessor || "",
+          number: item.number || 1,
+          edition: item.edition || "",
         });
       } catch (err) {
         console.error("Error fetching item for update:", err.message);
@@ -95,14 +99,7 @@ const EditItemPage = () => {
       <form onSubmit={handleSubmit} className="item-form-grid">
         <div className="form-row">
           <label htmlFor="possessor">Possessor</label>
-          <input
-            id="possessor"
-            name="possessor"
-            value={formData.possessor}
-            onChange={handleChange}
-            style={{ backgroundColor: "#f0f0f0" }}
-            required
-          />
+          <input id="possessor" name="possessor" value={formData.possessor} onChange={handleChange} style={{ backgroundColor: "#f0f0f0" }} required />
         </div>
 
         <div className="form-row">
@@ -171,6 +168,16 @@ const EditItemPage = () => {
             <option value="Damaged">Damaged</option>
             <option value="Heavily Damaged">Heavily Damaged</option>
           </select>
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="number">Number</label>
+          <input id="number" name="number" type="number" value={formData.number} onChange={handleChange} />
+        </div>
+
+        <div className="form-row">
+          <label htmlFor="edition">Edition</label>
+          <input id="edition" name="edition" value={formData.edition} onChange={handleChange} />
         </div>
 
         <div style={{ textAlign: "right", marginTop: "1rem" }}>

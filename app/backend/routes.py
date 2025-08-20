@@ -98,15 +98,17 @@ def add_item():
             "name": "",
             "description": "",
             "value": 0.0,
-            "creation_date": "",    # expected ISO string e.g. "2025-08-18T14:00:00Z"
-            "item_date": "",        # same format
+            "creation_date": "",
+            "item_date": "",
             "location": "",
             "creator": "",
-            "tags": [],             # list of strings
-            "image_path": "",       # e.g., "uploads/item123.jpg"
+            "tags": [],
+            "image_path": "",
             "category": "",
             "comment": "",
-            "condition": ""         # e.g., "New", "Used", etc.
+            "condition": "",
+            "number": 1,
+            "edition": "",
         }
         return jsonify(template), 200
     
@@ -131,6 +133,8 @@ def add_item():
             "category": data["category"] or "",
             "comment": data["comment"] or "",
             "condition": data["condition"] or "",
+            "number": data["number"] or 0,
+            "edition": data["edition"] or "",
         }
 
         result = db.items.insert_one(item)
@@ -187,6 +191,8 @@ def update_item(id):
         "comment": data.get("comment"),
         "condition": data.get("condition"),
         "possessor": data.get("possessor"),
+        "number": data.get("number"),
+        "edition": data.get("edition"),
     }
 
     # Remove keys with None values (optional)
