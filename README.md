@@ -20,3 +20,9 @@ This service is aimed to provide a storage unit for all items possessed by an en
 - Update/Delete items
 - Filter column system
 
+## TODO
+- Search bar
+- Category filtering
+- Value calculator
+- Nice Header and Footer
+- Add back button

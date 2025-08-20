@@ -50,9 +50,11 @@ app> db.users.createIndex({ username: 1 }, { unique: true })
 ```toml
 MONGO_HOST="127.0.0.1"
 MONGO_PORT=27017
-MONGO_SECRET="admin:admin"
+MONGO_SECRET="<mongodb-user>:<mongodb-password>"
+APP_SECRET_KEY=<app-secret>
 ```
 
+Replace all the `<>` with the values you set. For the APP_SECRET_KEY you can run this: `python3 -c "import secrets; print(secrets.token_hex())"`
 
 ## Flask Installation
 ```bash
