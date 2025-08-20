@@ -129,7 +129,7 @@ def add_item():
             "possessor": data["possessor"],
             "name": data["name"],
             "description": data["description"] or "",
-            "value": data["value"] or 0,
+            "value": round(data["value"] or 0,),
             "creation_date": datetime.datetime.now(datetime.timezone.utc),
             "item_date": data["item_date"] or "",
             "location": data["location"] or "",
@@ -187,7 +187,7 @@ def update_item(id):
     update_fields = {
         "name": data.get("name"),
         "description": data.get("description"),
-        "value": data.get("value"),
+        "value": round(float(data.get("value") or 0), 2),
         "item_date": data.get("item_date"),
         "location": data.get("location"),
         "tags": data.get("tags"),
