@@ -2,6 +2,7 @@ import datetime
 from bson import ObjectId
 from flask import request, jsonify
 from flask_login import login_required, current_user
+from pymongo.errors import DuplicateKeyError
 from __main__ import app, db
 
 
@@ -48,11 +49,16 @@ def add_category():
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing fields"}), 400
 
+        category_name = data["name"].strip().upper()
+
         item = {
-            "name": data["name"]
+            "name": category_name
         }
 
-        result = db.categories.insert_one(item)
+        try:
+            result = db.categories.insert_one(item)
+        except DuplicateKeyError:
+            return jsonify({ "error": "Category already exists" }), 409
         return jsonify({ "message": "Category added", "id": str(result.inserted_id) }), 201
 
 

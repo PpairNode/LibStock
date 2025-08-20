@@ -7,9 +7,7 @@ const AddItemPage = () => {
   const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
   const [categories, setCategories] = useState([]);
-
-
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     possessor: "",
     name: "",
     description: "",
@@ -24,7 +22,9 @@ const AddItemPage = () => {
     condition: "",
     number: 1,
     edition: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -48,10 +48,15 @@ const AddItemPage = () => {
     try {
       await axios.post("/api/item/add", itemToSend);
       setSuccess("Item added successfully.");
-      navigate("/dashboard");
+      setFormData({
+      ...initialFormData,
+      // Preserve few values
+      possessor: formData.possessor,
+      category: formData.category,
+    });
     } catch (err) {
       console.error("Error submitting item:", err.message);
-      setError("Failed to add item.");
+      setError(`Failed to add item: ${err.response?.data?.error || err.message}`);
     }
   };
 

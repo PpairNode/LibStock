@@ -22,7 +22,7 @@ const AddCategoryPage = () => {
       setCategories(res.data);
     } catch (err) {
       console.error("Error submitting category:", err.message);
-      setError("Failed to add category.");
+      setError(`Failed to add category: ${err.response?.data?.error || err.message}`);
     }
   };
 

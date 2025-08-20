@@ -24,6 +24,8 @@ MONGO_PORT = os.getenv("MONGO_PORT")
 MONGO_SECRET = os.getenv("MONGO_SECRET")
 client = MongoClient(f'mongodb://{MONGO_SECRET}@{MONGO_HOST}/?authSource=admin&retryWrites=true&w=majority', port=int(MONGO_PORT))
 db = client["app"]
+# Make sure categories collection is unique on name
+db.categories.create_index("name", unique=True, collation={"locale": "en", "strength": 2})
 
 # Set the login implementation
 login_manager = LoginManager()

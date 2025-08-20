@@ -35,6 +35,9 @@ const DashboardPage = () => {
 
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [categories, setCategories] = useState([]);
+
   const navigate = useNavigate();
   
   const handleDelete = async (itemId) => {
@@ -53,10 +56,6 @@ const DashboardPage = () => {
       alert("Failed to delete item.");
     }
   };
-
-  // const handleUpdate = (item) => {
-  //   navigate(`/item/update/${item._id}`, { state: { item } });
-  // };
 
   const [visibleColumns, setVisibleColumns] = useState(() => {
     const saved = localStorage.getItem("visibleColumns");
@@ -119,6 +118,21 @@ const DashboardPage = () => {
 
     fetchDashboard();
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("/api/categories");
+        const categoryNames = response.data.map(cat => cat.name);
+        setCategories(["All", ...categoryNames]);
+      } catch (error) {
+        console.error("Error fetching categories:", error.message);
+        navigate("/error");
+      }
+    };
+
+    fetchCategories();
+  }, [navigate]);
   
 
 
@@ -145,6 +159,20 @@ const DashboardPage = () => {
         ))}
       </div>
 
+      <div style={{ marginTop: "1rem" }}>
+        <label htmlFor="categoryFilter"><strong>Filter by Category:</strong></label>
+        <select
+          id="categoryFilter"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          style={{ marginLeft: "0.5rem", padding: "0.25rem", minWidth: "150px" }}
+        >
+          {categories.map((category) => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+      </div>
+
       {error ? (
         <p style={{ color: "red" }}>{error}</p>
       ) : (
@@ -166,7 +194,9 @@ const DashboardPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item, idx) => (
+                  {items
+                    .filter(item => selectedCategory === "All" || item.category === selectedCategory)
+                    .map((item, idx) => (
                     <tr 
                       key={idx}
                       onClick={() => setSelectedItem(item)}
