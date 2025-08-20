@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
-import "./AddItemPage.css"; // Reuse the same styling
+import "./DashboardPage.css";
+import "./AddItemPage.css";
+import "../components/Form.css";
 
 const AddCategoryPage = () => {
   const [name, setName] = useState("");
@@ -59,9 +61,10 @@ const AddCategoryPage = () => {
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
       
-      <div style={{ /*display: "flex", justifyContent: "space-between", alignItems: "center" */ marginBottom: "1rem" }}>
+      <div style={{ marginBottom: "1rem" }}>
         <h2>Manage Categories</h2><br/>
         <form onSubmit={handleSubmit} className="item-form-grid">
+          <div className="form-group">
             <label htmlFor="name">Name*</label>
             <input
               id="name"
@@ -70,11 +73,10 @@ const AddCategoryPage = () => {
               onChange={(e) => setName(e.target.value)}
               required
             />
-            <button type="submit">Add Category</button>
+            <button type="submit" className="form-button">Add Category</button>
+          </div>
         </form>
       </div>
-
-
 
       <div className="table-wrapper">
         <table className="item-table">

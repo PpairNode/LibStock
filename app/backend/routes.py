@@ -100,7 +100,7 @@ def list_items():
 def add_item():
     if request.method == "GET":
         template = {
-            "possessor": current_user.username,
+            "owner": current_user.username,
             "name": "",
             "description": "",
             "value": 0.0,
@@ -121,12 +121,12 @@ def add_item():
     else:  # POST
         data = request.get_json()
 
-        required_fields = ["possessor", "name", "value", "tags", "condition"]
+        required_fields = ["owner", "name", "value", "tags", "condition"]
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing fields"}), 400
 
         item = {
-            "possessor": data["possessor"],
+            "owner": data["owner"],
             "name": data["name"],
             "description": data["description"] or "",
             "value": round(data["value"] or 0,),
@@ -196,7 +196,7 @@ def update_item(id):
         "category": data.get("category"),
         "comment": data.get("comment"),
         "condition": data.get("condition"),
-        "possessor": data.get("possessor"),
+        "owner": data.get("owner"),
         "number": data.get("number"),
         "edition": data.get("edition"),
     }

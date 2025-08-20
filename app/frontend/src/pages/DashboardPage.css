@@ -1,28 +1,71 @@
+/* Container layout */
 .dashboard-container {
-  min-height: 100%;
   padding: 2rem;
   background-color: #f5f7fa;
   box-sizing: border-box;
+  min-height: calc(100vh - 104px);
+  width: 100%;
+  text-align: left;
 }
 
-.table-wrapper {
+/* Layout between table and detail pane */
+.dashboard-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.table-section {
+  flex: 1 1 100%;
+  max-width: 100%;
   overflow-x: auto;
+}
+
+.details-section {
+  flex: 1 1 100%;
+  max-width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 300px;
+  background-color: #fff;
+}
+
+/* Responsive layout for wider screens */
+@media (min-width: 1000px) {
+  .table-section {
+    flex: 0 0 70%;
+    max-width: 70%;
+  }
+
+  .details-section {
+    flex: 1;
+    max-width: 30%;
+  }
+}
+
+/* Table container with scroll */
+.table-wrapper {
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #fff;
-
   max-height: 500px;
   overflow-y: auto;
+  overflow-x: auto;
 }
 
+/* Table styling */
 .item-table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
 .item-table thead {
   position: sticky;
   top: 0;
+  background-color: #f0f4f8;
   z-index: 2;
 }
 
@@ -32,10 +75,11 @@
   border-bottom: 1px solid #eee;
   text-align: left;
   white-space: nowrap;
+  max-width: 250px;
+  word-break: break-word;
 }
 
 .item-table th {
-  background-color: #f0f4f8;
   font-weight: 600;
   color: #333;
 }
@@ -48,6 +92,7 @@
   color: #444;
 }
 
+/* Column selector toggle section */
 .column-selector {
   margin-bottom: 1rem;
   background: #fff;
@@ -83,6 +128,24 @@
   border-color: #007bff;
 }
 
+/* Buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+}
+
+.action-buttons .update-button,
+.action-buttons .delete-button {
+  padding: 4px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
 
 .delete-button {
   padding: 4px 10px;
@@ -93,54 +156,29 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
+
 .delete-button:hover {
   background-color: #c62828;
 }
 
 .update-button {
   font-size: 14px;
-  text-decoration: none;
-  display: inline-block;
   padding: 4px 10px;
-  background-color: #007bff;
+  background-color: #33aa33;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
 }
 
-/* Hover styles */
 .update-button:hover {
   background-color: #0056b3;
 }
 
-/* Make sure <button> doesn't carry default user-agent styles */
-button.update-button {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  line-height: inherit;
-}
-
-/* Reapply shared styles */
-button.update-button {
-  padding: 4px 10px;
-  text-decoration: none;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-/* Filter bar wrapper */
+/* Filter bar */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -153,7 +191,7 @@ button.update-button {
   border-radius: 8px;
 }
 
-/* Each input group */
+/* Filter & search groups */
 .filter-group,
 .search-group {
   display: flex;
@@ -186,11 +224,12 @@ button.update-button {
   background-color: #fff;
 }
 
+/* Value display */
 .value-display {
   display: flex;
   flex-direction: column;
   font-weight: 600;
-  color: #33cc33;
+  color: #33aa33;
   font-size: 0.95rem;
   max-width: 200px;
 }
@@ -205,41 +244,4 @@ button.update-button {
 
 .value-display .value {
   font-size: 1.2rem;
-}
-
-.dashboard-layout {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.dashboard-layout > .table-section {
-  flex: 1 1 100%;
-  max-width: 100%;
-}
-
-.dashboard-layout > .details-section {
-  flex: 1 1 100%;
-  max-width: 100%;
-}
-
-@media (min-width: 1000px) {
-  .dashboard-layout > .table-section {
-    flex: 0 0 70%;
-    max-width: 70%;
-  }
-
-  .dashboard-layout > .details-section {
-    flex: 1;
-    max-width: 30%;
-  }
-}
-
-.details-section {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 1rem;
-  min-height: 300px;
-  background-color: #fff;
 }

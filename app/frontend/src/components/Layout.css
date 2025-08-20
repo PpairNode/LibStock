@@ -1,0 +1,84 @@
+/* Layout.css */
+.App-content {
+  padding-top: 64px;
+  padding-bottom: 40px;
+  min-height: calc(100vh - 104px); /* 100vh minus header+footer height */
+  box-sizing: border-box; /* ensure padding included in height */
+  background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  /*flex-wrap: wrap;*/
+  align-items: stretch;
+  text-align: center;
+}
+
+.App-nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 64px;
+  background-color: #20232a;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.nav-button {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  background-color: #61dafb;
+  color: #282c34;
+  text-decoration: none;
+  border: none;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.nav-button:hover {
+  background-color: #21a1f1;
+  color: white;
+}
+
+
+.App-footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 40px;
+  background-color: #20232a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  margin-right: auto; /* Pushes the buttons to the right */
+  text-decoration: none;
+}
+
+.nav-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  padding: 0 0.5rem;
+}

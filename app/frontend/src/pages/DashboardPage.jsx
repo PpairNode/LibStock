@@ -13,7 +13,7 @@ const requiredColumns = [
   { key: "item_date", label: "Item Date" },
 ];
 const optionalColumns = [
-  { key: "possessor", label: "Possessor" },
+  { key: "owner", label: "Owner" },
   { key: "description", label: "Description" },
   { key: "tags", label: "Tags" },
   { key: "location", label: "Location" },
@@ -31,7 +31,7 @@ const DashboardPage = () => {
   const [username, setUsername] = useState("");
 
   const [items, setItems] = useState([]);
-  const [error] = useState(null);
+  const [error, setError] = useState(null);
 
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -56,7 +56,7 @@ const DashboardPage = () => {
       setItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
     } catch (error) {
       console.error("Error deleting item:", error.message);
-      alert("Failed to delete item.");
+      setError(`Failed to delete item: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -145,7 +145,7 @@ const DashboardPage = () => {
     const matchesSearch =
       item.name?.toLowerCase().includes(search) ||
       item.creator?.toLowerCase().includes(search) ||
-      item.possessor?.toLowerCase().includes(search) ||
+      item.owner?.toLowerCase().includes(search) ||
       item.creation_date?.toLowerCase().includes(search) ||
       (item.tags && item.tags.some(tag => tag.toLowerCase().includes(search)));
 
@@ -225,6 +225,7 @@ const DashboardPage = () => {
               <table className="item-table">
                 <thead>
                   <tr>
+                    <th>Actions</th>
                     {requiredColumns.map(
                       (col) => <th key={col.key}>{col.label}</th>
                     )}
@@ -232,8 +233,6 @@ const DashboardPage = () => {
                       (col) =>
                         visibleColumns.includes(col.key) && <th key={col.key}>{col.label}</th>
                     )}
-                    <th>Delete</th>
-                    <th>Update</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -244,6 +243,12 @@ const DashboardPage = () => {
                       onClick={() => setSelectedItem(item)}
                       style={{ cursor: "pointer", backgroundColor: selectedItem === item ? "#f0f0f0" : "white" }}
                     >
+                      {/* Actions column (update/delete) */}
+                      <td className="actions-button">
+                        <Link to={`/item/update/${item._id}`} className="update-button">+</Link>
+                        <button onClick={() => handleDelete(item._id)} className="delete-button">+</button>
+                      </td>
+                      {/* All other columns */}
                       <td>{item.name}</td>
                       <td>{item.category}</td>
                       <td>${item.value}</td>
@@ -271,25 +276,6 @@ const DashboardPage = () => {
                           </td>
                         )
                       )}
-                      {/* DELETE button */}
-                      <td>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // prevent row click
-                            handleDelete(item._id);
-                          }}
-                          className="delete-button"
-                        >
-                          Delete
-                        </button>
-                      </td>
-
-                      {/* UPDATE button */}
-                      <td>
-                        <Link to={`/item/update/${item._id}`} className="update-button" role="button">
-                          Update
-                        </Link>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -308,7 +294,7 @@ const DashboardPage = () => {
                 <p><strong>Date:</strong> {selectedItem.item_date}</p>
                 <p><strong>Location:</strong> {selectedItem.location}</p>
                 <p><strong>Creator:</strong> {selectedItem.creator}</p>
-                <p><strong>Possessor:</strong> {selectedItem.possessor}</p>
+                <p><strong>Owner:</strong> {selectedItem.owner}</p>
                 <p><strong>Tags:</strong> {selectedItem.tags?.join(", ")}</p>
                 <p><strong>Comment:</strong> {selectedItem.comment}</p>
                 <p><strong>Condition:</strong> {selectedItem.condition}</p>
