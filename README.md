@@ -19,10 +19,10 @@ This service is aimed to provide a storage unit for all items possessed by an en
 - Create items and catergories (used for items).
 - Update/Delete items
 - Filter column system
+- Category filtering
+- Value calculator on filter
 
 ## TODO
 - Search bar
-- Category filtering
-- Value calculator
 - Nice Header and Footer
 - Add back button

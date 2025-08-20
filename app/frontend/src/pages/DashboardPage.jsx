@@ -35,7 +35,9 @@ const DashboardPage = () => {
 
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    return localStorage.getItem("selectedCategory") || "All";
+  });
   const [categories, setCategories] = useState([]);
 
   const navigate = useNavigate();
@@ -134,7 +136,13 @@ const DashboardPage = () => {
     fetchCategories();
   }, [navigate]);
   
-
+  const filteredItems = items.filter(
+    item => selectedCategory === "All" || item.category === selectedCategory
+  );
+  const totalValue = filteredItems.reduce((sum, item) => {
+    const value = parseFloat(item.value);
+    return sum + (isNaN(value) ? 0 : value);
+  }, 0);
 
   return (
     <div className="dashboard-container">
@@ -159,18 +167,29 @@ const DashboardPage = () => {
         ))}
       </div>
 
-      <div style={{ marginTop: "1rem" }}>
-        <label htmlFor="categoryFilter"><strong>Filter by Category:</strong></label>
-        <select
-          id="categoryFilter"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          style={{ marginLeft: "0.5rem", padding: "0.25rem", minWidth: "150px" }}
-        >
-          {categories.map((category) => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
+      <div style={{ marginTop: "1rem", display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div>
+          <label htmlFor="categoryFilter"><strong>Filter by Category:</strong></label>
+          <select
+            id="categoryFilter"
+            value={selectedCategory}
+            onChange={(e) => {
+              const selected = e.target.value;
+              setSelectedCategory(selected);
+              localStorage.setItem("selectedCategory", selected);
+            }}
+            style={{ marginLeft: "0.5rem", padding: "0.25rem", minWidth: "150px" }}
+          >
+            {categories.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Total Value */}
+        <div style={{ fontWeight: "bold" }}>
+          Total Value: ${totalValue.toFixed(2)}
+        </div>
       </div>
 
       {error ? (
@@ -221,7 +240,11 @@ const DashboardPage = () => {
                                     style={{ borderRadius: "4px" }}
                                   />
                                 )
-                              : item[col.key]}
+                              : col.key === "creation_date"
+                              ? item[col.key]?.slice(0, 10)
+                              :
+                              item[col.key]
+                              }
                           </td>
                         )
                       )}
