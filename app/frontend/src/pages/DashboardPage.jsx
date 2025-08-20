@@ -39,6 +39,7 @@ const DashboardPage = () => {
     return localStorage.getItem("selectedCategory") || "All";
   });
   const [categories, setCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const navigate = useNavigate();
   
@@ -136,13 +137,27 @@ const DashboardPage = () => {
     fetchCategories();
   }, [navigate]);
   
-  const filteredItems = items.filter(
-    item => selectedCategory === "All" || item.category === selectedCategory
-  );
+  const filteredItems = items.filter((item) => {
+    // Filter by category
+    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
+    // Filter by search term
+    const search = searchTerm.toLowerCase();
+    const matchesSearch =
+      item.name?.toLowerCase().includes(search) ||
+      item.creator?.toLowerCase().includes(search) ||
+      item.possessor?.toLowerCase().includes(search) ||
+      item.creation_date?.toLowerCase().includes(search) ||
+      (item.tags && item.tags.some(tag => tag.toLowerCase().includes(search)));
+
+    return matchesCategory && matchesSearch;
+  });
+
   const totalValue = filteredItems.reduce((sum, item) => {
     const value = parseFloat(item.value);
     return sum + (isNaN(value) ? 0 : value);
   }, 0);
+
+
 
   return (
     <div className="dashboard-container">
@@ -192,6 +207,16 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      <div style={{ flex: 1 }}>
+        <input
+          type="text"
+          placeholder="Search name, tags, creator, possessor..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ padding: "0.4rem" }}
+        />
+      </div>
+
       {error ? (
         <p style={{ color: "red" }}>{error}</p>
       ) : (
@@ -213,8 +238,7 @@ const DashboardPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {items
-                    .filter(item => selectedCategory === "All" || item.category === selectedCategory)
+                  {filteredItems
                     .map((item, idx) => (
                     <tr 
                       key={idx}
