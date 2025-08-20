@@ -22,7 +22,7 @@ This service is aimed to provide a storage unit for all items possessed by an en
 - Category filtering
 - Value calculator on filter
 - Search bar
+- Nice Header and Footer
 
 ## TODO
-- Nice Header and Footer
 - Add back button
