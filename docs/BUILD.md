@@ -1,10 +1,3 @@
-# Certificate setup
-## Create certificates
-```bash
-mkdir tls
-openssl req -x509 -newkey rsa:4096 -keyout tls/key.pem -out tls/cert.pem -days 365 -nodes -subj "/CN=localhost"
-```
-
 # BACKEND
 ## MongoDB Installation
 ```bash
@@ -58,14 +51,25 @@ Replace all the `<>` with the values you set. For the APP_SECRET_KEY you can run
 
 ## Flask Installation
 ```bash
+cd app/backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
 ## Run Flask server
+- Python3
 ```bash
-python3 app/backend/app.py
+python3 run.py
+```
+
+- Gunicorn
+```bash
+# Create certificates
+mkdir tls
+openssl req -x509 -newkey rsa:4096 -keyout tls/key.pem -out tls/cert.pem -days 365 -nodes -subj "/CN=localhost"
+# Run gunicorn
+gunicorn -b 127.0.0.1:8000 --keyfile tls/key.pem --certfile tls/cert.pem run:app
 ```
 
 # FRONTEND

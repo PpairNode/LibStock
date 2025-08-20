@@ -1,13 +1,16 @@
 import datetime
 from bson import ObjectId
-from flask import request, jsonify
+from flask import request, jsonify, Blueprint
 from flask_login import login_required, current_user
 from pymongo.errors import DuplicateKeyError
-from __main__ import app, db
+from app.db import db
 
 
 
-@app.route("/")
+api_bp = Blueprint("api", __name__)
+
+
+@api_bp.route("/")
 def hello():
     print("Route triggered: hello")
     return jsonify({
@@ -16,7 +19,7 @@ def hello():
     }), 200
 
 
-@app.route("/api/user", methods=["GET"])
+@api_bp.route("/user", methods=["GET"])
 @login_required
 def get_current_user():
     return jsonify({
@@ -24,7 +27,7 @@ def get_current_user():
     })
 
 
-@app.route("/api/categories", methods=["GET"])
+@api_bp.route("/categories", methods=["GET"])
 @login_required
 def list_categories():
     categories = list(db.categories.find())
@@ -33,7 +36,7 @@ def list_categories():
     return jsonify(categories), 200
 
 
-@app.route("/api/category/add", methods=["GET", "POST"])
+@api_bp.route("/category/add", methods=["GET", "POST"])
 @login_required
 def add_category():
     if request.method == "GET":
@@ -62,7 +65,7 @@ def add_category():
         return jsonify({ "message": "Category added", "id": str(result.inserted_id) }), 201
 
 
-@app.route("/api/category/delete", methods=["DELETE"])
+@api_bp.route("/category/delete", methods=["DELETE"])
 @login_required
 def delete_category():
     data = request.get_json()
@@ -76,7 +79,7 @@ def delete_category():
         return jsonify({"message": "Item not found"}), 404
 
 
-@app.route("/api/dashboard", methods=["GET"])
+@api_bp.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
     return jsonify({
@@ -85,7 +88,7 @@ def dashboard():
     }), 200
 
 
-@app.route("/api/items", methods=["GET"])
+@api_bp.route("/items", methods=["GET"])
 @login_required
 def list_items():
     items = list(db.items.find())
@@ -95,7 +98,7 @@ def list_items():
     return jsonify(items), 200
 
 
-@app.route("/api/item/add", methods=["GET", "POST"])
+@api_bp.route("/item/add", methods=["GET", "POST"])
 @login_required
 def add_item():
     if request.method == "GET":
@@ -147,7 +150,7 @@ def add_item():
         return jsonify({ "message": "Item added", "id": str(result.inserted_id) }), 201
 
 
-@app.route("/api/item/delete", methods=["DELETE"])
+@api_bp.route("/item/delete", methods=["DELETE"])
 @login_required
 def delete_item():
     data = request.get_json()
@@ -164,7 +167,7 @@ def delete_item():
         return jsonify({"message": "Item not found"}), 404
     
 
-@app.route("/api/item/update/<id>", methods=["GET"])
+@api_bp.route("/item/update/<id>", methods=["GET"])
 @login_required
 def get_item_by_id(id):
     try:
@@ -178,7 +181,7 @@ def get_item_by_id(id):
         return jsonify({"message": "Failed to fetch item"}), 500
 
 
-@app.route("/api/item/update/<id>", methods=["POST"])
+@api_bp.route("/item/update/<id>", methods=["POST"])
 @login_required
 def update_item(id):
     data = request.json

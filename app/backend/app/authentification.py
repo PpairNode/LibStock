@@ -1,8 +1,12 @@
 from bson import ObjectId
-from flask import render_template, request, redirect, url_for, jsonify
+from flask import request, redirect, url_for, jsonify, Blueprint
 from flask_login import login_user, login_required, logout_user, UserMixin, current_user
-from __main__ import login_manager, db, app, bcrypt
+from app.db import db
+from app.extensions import login_manager, bcrypt
 
+
+
+auth_bp = Blueprint("auth", __name__)
 
 
 # User class
@@ -19,8 +23,14 @@ def load_user(user_id):
         return User(user_data)
     return None
 
+# Unauthorized users redirected properly
+@login_manager.unauthorized_handler
+def unauthorized():
+    return jsonify({ "error": "Unauthorized" }), 401
+
+
 # Routes
-@app.route("/api/login", methods=["GET", "POST"])
+@auth_bp.route("/api/login", methods=["GET", "POST"])
 def login():
     print("User is trying to login...")
     if current_user.is_authenticated == True:
@@ -41,7 +51,8 @@ def login():
         return jsonify({ "message": "Invalid credentials" }), 401
     return jsonify({ "message": "Please log in", "login_required": True }), 200
 
-@app.route("/api/logout", methods=["POST"])
+
+@auth_bp.route("/api/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
