@@ -116,7 +116,7 @@ def add_item():
             "owner": data["owner"],
             "name": data["name"],
             "description": data["description"] or "",
-            "value": round(data["value"] or 0,),
+            "value": round(float(data["value"]) or 0),
             "creation_date": datetime.datetime.now(datetime.timezone.utc),
             "item_date": data["item_date"] or "",
             "location": data["location"] or "",
