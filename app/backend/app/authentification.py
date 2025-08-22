@@ -5,7 +5,6 @@ from app.db import db
 from app.extensions import login_manager, bcrypt
 
 
-
 auth_bp = Blueprint("auth", __name__)
 
 
@@ -30,7 +29,7 @@ def unauthorized():
 
 
 # Routes
-@auth_bp.route("/login", methods=["GET", "POST"])
+@auth_bp.route("/login", methods=["OPTIONS", "GET", "POST"])
 def login():
     if current_user.is_authenticated == True:
         return jsonify({ "authenticated": True, "redirect": "/dashboard" }), 200
@@ -51,4 +50,4 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("login"))
+    return redirect(url_for("auth.login"))

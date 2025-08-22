@@ -9,5 +9,5 @@ export const logout = async () => {
 };
 
 export const getDashboard = async () => {
-  return axios.get("/api/dashboard");
+  return axios.get("/dashboard");
 };

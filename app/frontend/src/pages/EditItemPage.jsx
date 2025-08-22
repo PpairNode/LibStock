@@ -31,7 +31,7 @@ const EditItemPage = () => {
   useEffect(() => {
     const fetchItem = async () => {
       try {
-        const res = await axios.get(`/api/item/update/${id}`);
+        const res = await axios.get(`/item/update/${id}`);
         const item = res.data;
 
         setFormData({
@@ -58,7 +58,7 @@ const EditItemPage = () => {
 
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/api/categories");
+        const res = await axios.get("/categories");
         setCategories(res.data);
       } catch (err) {
         console.error("Error fetching categories:", err.message);
@@ -84,7 +84,7 @@ const EditItemPage = () => {
     };
 
     try {
-      await axios.post(`/api/item/update/${id}`, updatedItem);
+      await axios.post(`/item/update/${id}`, updatedItem);
       navigate("/dashboard");
     } catch (err) {
       console.error("Update failed:", err.message);

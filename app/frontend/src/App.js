@@ -20,7 +20,7 @@ const App = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get("/api/user");
+        const res = await axios.get("/user");
         if (res.status === 200) setIsAuthenticated(true);
       } catch {
         setIsAuthenticated(false);
@@ -36,11 +36,11 @@ const App = () => {
           {/* Public routes */}
           <Route path="/" element={<RootPage />} />
           <Route path="/error" element={<ErrorPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
 
           {/* Private routes */}
           <Route path="/" element={<PrivateRoute><Outlet /></PrivateRoute>}>
-            <Route path="/logout" element={<LogoutPage />} />
+            <Route path="/logout" element={<LogoutPage setIsAuthenticated={setIsAuthenticated} />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/item/add" element={<AddItemPage />} />
             <Route path="/item/update/:id" element={<EditItemPage />} />

@@ -1,5 +1,34 @@
+# DOCKER BUILD
+## Environment file
+- File `.env`
+```bash
+# Backend Setup
+MONGO_HOST="mongo"
+MONGO_PORT=27017
+MONGO_SECRET="<DB-USERNAME>:<DB-PASSWORD>"
+APP_SECRET_KEY=<APP-SECRET-KEY>  # Can be generated with `python3 -c "import secrets; print(secrets.token_hex())"` 
+REACT_HOST_ORIGIN="https://localhost"
+
+# DB Setup
+MONGO_ADMIN_USER=<DB-USERNAME>
+MONGO_ADMIN_PASS=<DB-PASSWORD>
+USERNAME=<USER-OF-WEBSITE-NAME>
+BCRYPT_PASSWORD_HASH=<USER-OF-WEBSITE-BCRYPT-PASSWORD-HASH>  # Can be generated with `python3 -c "import bcrypt; print(bcrypt.hashpw(b'<INSERT-PASS>', bcrypt.gensalt()).decode())"`
+
+# Frontend Setup
+REACT_APP_API_URL=https://localhost/api
+```
+
+## Run
+```bash
+docker-compose up --build
+# Then open a browser and type https://localhost
+```
+
+
 # BACKEND
-## MongoDB Installation
+## MongoDB
+### Installation
 ```bash
 curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
    sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg \
@@ -12,7 +41,7 @@ sudo apt install -y mongodb-org
 sudo systemctl start mongod
 ```
 
-## Setup DB
+### Setup DB
 - Update admin and setup password
 ```bash
 mongosh

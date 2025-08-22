@@ -3,22 +3,26 @@ import React, { useEffect } from "react";
 import axios from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
-const LogoutPage = () => {
+const LogoutPage = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
     const logout = async () => {
       try {
         const response = await axios.post("/logout");
-        console.log(response.data.message);
-        navigate("/login");
+
+        if (response.status === 200) {
+          setIsAuthenticated(false);
+          console.log(response.data.message);
+          navigate("/login");
+        }
       } catch (error) {
         console.error("Logout failed:", error.message);
       }
     };
 
     logout();
-  }, [navigate]);
+  }, [navigate, setIsAuthenticated]);
 
   return <p>Logging out...</p>;
 };

@@ -21,7 +21,7 @@ def get_current_user():
 @api_bp.route("/categories", methods=["GET"])
 @login_required
 def list_categories():
-    categories = list(db.categories.find())
+    categories = list(db.categories.find({}))
     for cat in categories:
         cat["_id"] = str(cat["_id"])  # Convert ObjectId to string
     return jsonify(categories), 200
@@ -35,20 +35,13 @@ def add_category():
             "name": "",
         }
         return jsonify(template), 200
-    
     else:  # POST
         data = request.get_json()
-
         required_fields = ["name"]
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing fields"}), 400
-
         category_name = data["name"].strip().upper()
-
-        item = {
-            "name": category_name
-        }
-
+        item = { "name": category_name }
         try:
             result = db.categories.insert_one(item)
         except DuplicateKeyError:
@@ -82,7 +75,7 @@ def dashboard():
 @api_bp.route("/items", methods=["GET"])
 @login_required
 def list_items():
-    items = list(db.items.find())
+    items = list(db.items.find({}))
     for item in items:
         item["_id"] = str(item["_id"])  # Convert ObjectId to string
         item["creation_date"] = item["creation_date"].isoformat() if "creation_date" in item else None

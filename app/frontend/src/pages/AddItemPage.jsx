@@ -49,7 +49,7 @@ const AddItemPage = () => {
     };
 
     try {
-      await axios.post("/api/item/add", itemToSend);
+      await axios.post("/item/add", itemToSend);
       setSuccess("Item added successfully.");
       setFormData({
       ...initialFormData,
@@ -67,7 +67,7 @@ const AddItemPage = () => {
     const fetchUser = async () => {
       try {
         console.log("Fetching user...");
-        const res = await axios.get("/api/user");
+        const res = await axios.get("/user");
         const username = res.data.username;
         console.log("Fetched user:", username);
         setFormData((prev) => ({ ...prev, owner: username }));
@@ -83,7 +83,7 @@ const AddItemPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/api/categories");
+        const res = await axios.get("/categories");
         console.log("Categories:", res.data)
         setCategories(res.data);
       } catch (err) {

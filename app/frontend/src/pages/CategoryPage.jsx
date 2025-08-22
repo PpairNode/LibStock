@@ -18,9 +18,9 @@ const AddCategoryPage = () => {
     setSuccess(null);
 
     try {
-      await axios.post("/api/category/add", { name });
+      await axios.post("/category/add", { name });
       setSuccess("Category added successfully.");
-      const res = await axios.get("/api/categories");
+      const res = await axios.get("/categories");
       setCategories(res.data);
     } catch (err) {
       console.error("Error submitting category:", err.message);
@@ -30,7 +30,7 @@ const AddCategoryPage = () => {
 
   const handleDelete = async (itemId) => {
     try {
-      await axios.delete("/api/category/delete", {
+      await axios.delete("/category/delete", {
         data: { id: itemId },
       });
 
@@ -45,7 +45,7 @@ const AddCategoryPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/api/categories");
+        const res = await axios.get("/categories");
         setCategories(res.data);
       } catch (err) {
         console.error("Failed to fetch user info", err.message);

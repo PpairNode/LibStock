@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "../api/axiosConfig";
 import "./LoginPage.css"
 
-const LoginPage = () => {
+const LoginPage = ({ setIsAuthenticated }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -31,9 +31,11 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post("/login", { username, password });
-      // Assuming backend responds with { message, redirect }
-      const redirectUrl = response.data.redirect || "/dashboard";
-      navigate(redirectUrl);
+      if (response.status === 200) {
+        setIsAuthenticated(true);
+        const redirectUrl = response.data.redirect || "/dashboard";
+        navigate(redirectUrl);
+      }
     } catch (err) {
       console.error("Login error:", err);
       if (err.response?.data?.message) {

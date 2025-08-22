@@ -13,3 +13,9 @@ npx create-react-app frontend
 cd frontend
 ```
 
+# DOCKER
+```bash
+docker exec -it backend /bin/bash
+apt-get update && apt-get install -y curl
+curl -X POST http://127.0.0.1:8000/api/login -d '{"username":"test","password":"test"}' -H "Content-Type: application/json"
+```

@@ -48,7 +48,7 @@ const DashboardPage = () => {
     // if (!window.confirm("Are you sure you want to delete this item?")) return;
 
     try {
-      await axios.delete("/api/item/delete", {
+      await axios.delete("/item/delete", {
         data: { id: itemId },
       });
 
@@ -82,7 +82,7 @@ const DashboardPage = () => {
     const fetchItems = async () => {
       console.log("Fetching items...")
       try {
-        const response = await axios.get("/api/items");
+        const response = await axios.get("/items");
         // Check if data is an array
         if (!Array.isArray(response.data)) {
           throw new Error("Invalid response format");
@@ -95,7 +95,7 @@ const DashboardPage = () => {
           navigate("/login");
         } else {
           console.error("Error fetching dashboard columns:", error.message);
-          navigate("/error");
+          navigate("/error", { state: { message: `Error fetching dashboard columns: ${error.message}` }});
         }
       }
     };
@@ -106,7 +106,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await axios.get("/api/dashboard");
+        const response = await axios.get("/dashboard");
         setMessage(response.data.message);
         setUsername(response.data.username);
       } catch (error) {
@@ -114,7 +114,7 @@ const DashboardPage = () => {
           window.location.href = "/login";
         } else {
           console.error("Error fetching dashboard:", error.message);
-          navigate("/error");
+          navigate("/error", { state: { message: `Error fetching dashboard: ${error.message}` }});
         }
       }
     };
@@ -125,12 +125,22 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("/api/categories");
+        const response = await axios.get("/categories");
+        if (!Array.isArray(response.data)) {
+          console.error("Expected an array but got:", response.data);
+          navigate("/error", {
+            state: {
+              message: `Error fetching categories: Expected an array but got ${typeof response.data}`
+            }
+          });
+          return;
+        }
+
         const categoryNames = response.data.map(cat => cat.name);
         setCategories(["All", ...categoryNames]);
       } catch (error) {
         console.error("Error fetching categories:", error.message);
-        navigate("/error");
+        navigate("/error", { state: { message: `Error fetching categories: ${error.message}` }});
       }
     };
 
