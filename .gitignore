@@ -1,5 +1,5 @@
 # MongoDB ENV
-.env
+.env*
 
 # Certificates
 tls/
@@ -24,7 +24,8 @@ node_modules/
 /coverage
 
 # production
-/build
+build/
+certs/
 
 # misc
 .DS_Store
