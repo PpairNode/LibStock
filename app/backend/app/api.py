@@ -90,13 +90,7 @@ def list_items():
 @api_bp.route('/media/<filename>')
 def media(filename):
     try:
-        full_path = Path(UPLOAD_FOLDER) / filename
-
-        print(f"UPLOAD_FOLDER: {UPLOAD_FOLDER}")
-        print(f"Filename: {filename}")
-        print(f"Fullpath: {full_path}")
-        resp = send_from_directory(UPLOAD_FOLDER, filename)
-        print(f"Response: {resp}")
+        resp = send_from_directory(str(Path(UPLOAD_FOLDER)), filename)
         return resp
     except Exception as e:
         print(f"Error in send_from_directory: {e}")
@@ -187,18 +181,23 @@ def upload_image():
 def delete_item():
     data = request.get_json()
     item_id = data.get("id")
-
     if not item_id:
         return jsonify({"message": "Item ID is required"}), 400
-
-    result = db.items.delete_one({"_id": ObjectId(item_id)})
-
-    # TODO: delete image stored
-    image_path = data.get("image_path")
-    if image_path not in ["", None]:
-        print(f"Deleting image {image_path}!") 
-        pass
-
+    obj_id = ObjectId(str(item_id))
+    item = db.items.find_one({"_id": obj_id})
+    result = db.items.delete_one({"_id": obj_id})
+    # Try to delete image if any
+    image_path = item['image_path']
+    if image_path:
+        print(f"Deleting image {image_path}!")
+        old_image_path = item["image_path"]
+        if old_image_path:
+            print(f"Old Image Path: {old_image_path}")
+            old_image_path = Path(UPLOAD_FOLDER) / old_image_path
+            if old_image_path.exists() and old_image_path.is_file():
+                print(f"Image Deleted: {old_image_path}")
+                old_image_path.unlink()
+    # Check result
     if result.deleted_count == 1:
         return jsonify({"message": "Item deleted successfully"}), 200
     else:

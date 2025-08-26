@@ -28,7 +28,7 @@ const EditItemPage = () => {
     edition: "",
   });
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [, setSuccess] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
