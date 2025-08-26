@@ -57,7 +57,7 @@ const AddCategoryPage = () => {
   }, [navigate]);
 
   return (
-    <div className="dashboard-container">
+    <div className="container">
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
       

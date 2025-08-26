@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../api/axiosConfig";
 import "./DashboardPage.css";
+import getPublicImageUrl from "../utils/Media";
+import ImageLightbox from "../components/ImageLightbox";
 
 
 
@@ -20,7 +22,7 @@ const optionalColumns = [
   { key: "creator", label: "Creator" },
   { key: "condition", label: "Condition" },
   { key: "creation_date", label: "Created" },
-  { key: "image_path", label: "Image" },
+  { key: "image_path", label: "Image Path" },
   { key: "number", label: "Number" },
   { key: "edition", label: "Edition" },
 ];
@@ -54,6 +56,14 @@ const DashboardPage = () => {
 
       // Remove item from local state
       setItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
+
+      // Reset if selected was the deleted object
+      setSelectedItem((prevSelected) => {
+        if (prevSelected?._id === itemId) {
+          return null;  // or undefined, whatever clears your selection
+        }
+        return prevSelected;
+      });
     } catch (error) {
       console.error("Error deleting item:", error.message);
       setError(`Failed to delete item: ${error.response?.data?.error || error.message}`);
@@ -170,7 +180,7 @@ const DashboardPage = () => {
 
 
   return (
-    <div className="dashboard-container">
+    <div className="container">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2>Dashboard | <strong>{message}</strong> (logged in as: {username})</h2>
         <div className="button-group">
@@ -250,7 +260,7 @@ const DashboardPage = () => {
                     .map((item, idx) => (
                     <tr 
                       key={idx}
-                      onClick={() => setSelectedItem(item)}
+                      onClick={() => setSelectedItem({ ...item})}
                       style={{ cursor: "pointer", backgroundColor: selectedItem === item ? "#f0f0f0" : "white" }}
                     >
                       {/* Actions column (update/delete) */}
@@ -270,19 +280,12 @@ const DashboardPage = () => {
                             {col.key === "tags"
                               ? item[col.key]?.join(", ")
                               : col.key === "image_path"
-                              ? (
-                                  <img
-                                    src={item[col.key]}
-                                    alt="Item"
-                                    width="50"
-                                    style={{ borderRadius: "4px" }}
-                                  />
-                                )
+                              ? <img src={getPublicImageUrl(item[col.key])} alt="Item ICON" width="50" style={{ borderRadius: "4px" }} />
                               : col.key === "creation_date"
                               ? item[col.key]?.slice(0, 10)
                               :
                               item[col.key]
-                              }
+                            }
                           </td>
                         )
                       )}
@@ -310,9 +313,7 @@ const DashboardPage = () => {
                 <p><strong>Condition:</strong> {selectedItem.condition}</p>
                 <p><strong>Number:</strong> {selectedItem.number}</p>
                 <p><strong>Edition:</strong> {selectedItem.edition}</p>
-                {selectedItem.image_path && (
-                  <img src={selectedItem.image_path} alt="Item" style={{ maxWidth: "100%", marginTop: "1rem" }} />
-                )}
+                <ImageLightbox src={getPublicImageUrl(selectedItem.image_path)} alt={selectedItem.name || "Item image"} />
               </>
               ) : (
               <p style={{ color: "#888", fontStyle: "italic" }}>

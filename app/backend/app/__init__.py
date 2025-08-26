@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from app.api import api_bp
 from app.authentification import auth_bp
 from app.extensions import login_manager, bcrypt
+from app.utils import UPLOAD_FOLDER
 
 
 def create_app(debug: bool = False):
@@ -22,6 +23,8 @@ def create_app(debug: bool = False):
     else:
         app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Required for cross-origin cookies
         app.config['SESSION_COOKIE_SECURE'] = False
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
     # Set bcrypt
     bcrypt.init_app(app)

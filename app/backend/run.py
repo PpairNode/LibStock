@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from app import create_app
 
 # For logs output
-sys.stdout.reconfigure(line_buffering=True)
+# sys.stdout.reconfigure(line_buffering=True)
 
 
 

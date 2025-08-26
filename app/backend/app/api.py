@@ -1,9 +1,14 @@
+import os
 import datetime
+import secrets
 from bson import ObjectId
-from flask import request, jsonify, Blueprint
+from pathlib import Path
+from flask import request, jsonify, Blueprint, send_from_directory
 from flask_login import login_required, current_user
 from pymongo.errors import DuplicateKeyError
+from werkzeug.utils import secure_filename
 from app.db import db
+from app.utils import UPLOAD_FOLDER
 
 
 
@@ -82,6 +87,22 @@ def list_items():
     return jsonify(items), 200
 
 
+@api_bp.route('/media/<filename>')
+def media(filename):
+    try:
+        full_path = Path(UPLOAD_FOLDER) / filename
+
+        print(f"UPLOAD_FOLDER: {UPLOAD_FOLDER}")
+        print(f"Filename: {filename}")
+        print(f"Fullpath: {full_path}")
+        resp = send_from_directory(UPLOAD_FOLDER, filename)
+        print(f"Response: {resp}")
+        return resp
+    except Exception as e:
+        print(f"Error in send_from_directory: {e}")
+        return jsonify({"error": "File not found"}), 404
+
+
 @api_bp.route("/item/add", methods=["GET", "POST"])
 @login_required
 def add_item():
@@ -132,6 +153,33 @@ def add_item():
 
         result = db.items.insert_one(item)
         return jsonify({ "message": "Item added", "id": str(result.inserted_id) }), 201
+    
+
+
+# File upload config
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+def allowed_rename_file(filename) -> str | None:
+    if '.' in filename:
+        extension = filename.rsplit('.', 1)[1].lower()
+        if extension in ALLOWED_EXTENSIONS:
+            return secrets.token_hex() + '.' + extension
+    return None
+
+@api_bp.route('/upload/image', methods=['POST'])
+@login_required
+def upload_image():
+    file = request.files.get('image')
+    if not file:
+        return jsonify({"error": "Invalid image file"}), 400
+    new_name = allowed_rename_file(file.filename)
+    if new_name is None:
+        return jsonify({"error": "Invalid image extension"}), 400
+
+    filename = secure_filename(new_name)
+    path = Path(UPLOAD_FOLDER) / filename
+    full_path = str(path)
+    file.save(full_path)
+    return jsonify({"image_path": full_path}), 200
 
 
 @api_bp.route("/item/delete", methods=["DELETE"])
@@ -144,6 +192,12 @@ def delete_item():
         return jsonify({"message": "Item ID is required"}), 400
 
     result = db.items.delete_one({"_id": ObjectId(item_id)})
+
+    # TODO: delete image stored
+    image_path = data.get("image_path")
+    if image_path not in ["", None]:
+        print(f"Deleting image {image_path}!") 
+        pass
 
     if result.deleted_count == 1:
         return jsonify({"message": "Item deleted successfully"}), 200
@@ -178,7 +232,6 @@ def update_item(id):
         "item_date": data.get("item_date"),
         "location": data.get("location"),
         "tags": data.get("tags"),
-        "image_path": data.get("image_path"),
         "creator": data.get("creator"),
         "category": data.get("category"),
         "comment": data.get("comment"),
@@ -187,6 +240,10 @@ def update_item(id):
         "number": data.get("number"),
         "edition": data.get("edition"),
     }
+    image_path = data.get("image_path")
+    print(f"Image path: {image_path}")
+    if image_path:
+        update_fields['image_path'] = image_path
 
     # Remove keys with None values (optional)
     update_fields = {k: v for k, v in update_fields.items() if v is not None}

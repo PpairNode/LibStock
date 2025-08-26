@@ -1,0 +1,39 @@
+.thumbnail-image {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: transform 0.2s ease;
+  display: block;
+  margin: 1rem auto;
+  max-width: 300px;
+  max-height: 300px;
+  object-fit: contain;
+}
+
+.thumbnail-image:hover {
+  transform: scale(1.05);
+}
+
+/* Fullscreen overlay */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  cursor: zoom-out;
+}
+
+/* The big image */
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  cursor: auto;
+  user-select: none;
+}

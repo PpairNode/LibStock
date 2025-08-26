@@ -18,6 +18,7 @@ const EditItemPage = () => {
     location: "",
     creator: "",
     tags: "",
+    image: null,
     image_path: "",
     category: "",
     comment: "",
@@ -27,6 +28,8 @@ const EditItemPage = () => {
     edition: "",
   });
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -42,7 +45,7 @@ const EditItemPage = () => {
           location: item.location || "",
           creator: item.creator || "",
           tags: item.tags?.join(", ") || "",
-          image_path: item.image_path || "",
+          image: null,
           category: item.category || "",
           comment: item.comment || "",
           condition: item.condition || "",
@@ -75,12 +78,44 @@ const EditItemPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle image selection and immediate upload
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    const formDataImg = new FormData();
+    formDataImg.append("image", file);
+
+    try {
+      const response = await axios.post("/upload/image", formDataImg, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        image: file,
+        image_path: response.data.image_path,
+      }));
+
+      setSuccess("Image uploaded successfully.");
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      setError("Image upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const updatedItem = {
       ...formData,
       tags: formData.tags.split(",").map(tag => tag.trim()).filter(Boolean),
+      image_path: formData.image_path
     };
 
     try {
@@ -93,7 +128,7 @@ const EditItemPage = () => {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "auto", padding: "1rem" }}>
+    <div className="container">
       <h2>Edit Item</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
@@ -140,11 +175,6 @@ const EditItemPage = () => {
           </div>
 
           <div className="form-row">
-            <label htmlFor="image_path">Image Path</label>
-            <input id="image_path" name="image_path" value={formData.image_path} onChange={handleChange} />
-          </div>
-
-          <div className="form-row">
             <label htmlFor="category">Category*</label>
             <select id="category" name="category" value={formData.category} onChange={handleChange} required>
               <option value="">-- Select a Category --</option>
@@ -180,6 +210,13 @@ const EditItemPage = () => {
           <div className="form-row">
             <label htmlFor="edition">Edition</label>
             <input id="edition" name="edition" value={formData.edition} onChange={handleChange} />
+          </div>
+
+          <div className="form-row">
+            <label htmlFor="image">Image</label>
+            <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} />
+            {uploading && <p>Uploading...</p>}
+            {formData.image_path && <p>✅ Image uploaded</p>}
           </div>
 
           <button type="submit" className="form-button">Update Item</button>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "./AddItemPage.css";
 import "./DashboardPage.css";
 import "../components/Form.css";
+import { DEFAULT_NOT_IMAGE_PATH } from "../utils/Const"
 
 
 const AddItemPage = () => {
@@ -19,7 +20,7 @@ const AddItemPage = () => {
     location: "",
     creator: "",
     tags: "",
-    image_path: "",
+    image: null,
     category: "",
     comment: "",
     condition: "",
@@ -31,10 +32,42 @@ const AddItemPage = () => {
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle image selection and immediate upload
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    const formDataImg = new FormData();
+    formDataImg.append("image", file);
+
+    try {
+      const response = await axios.post("/upload/image", formDataImg, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        image: file,
+        image_path: response.data.image_path,
+      }));
+
+      setSuccess("Image uploaded successfully.");
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      setError("Image upload failed.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -46,6 +79,7 @@ const AddItemPage = () => {
       ...formData,
       creation_date: new Date().toISOString(),
       tags: formData.tags.split(",").map(tag => tag.trim()).filter(Boolean),
+      image_path: formData.image_path || DEFAULT_NOT_IMAGE_PATH,
     };
 
     try {
@@ -96,7 +130,7 @@ const AddItemPage = () => {
   }, [navigate]);
 
   return (
-    <div className="dashboard-container">
+    <div className="container">
       <h2>Add New Item</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
@@ -144,8 +178,10 @@ const AddItemPage = () => {
           </div>
 
           <div className="form-row">
-              <label htmlFor="image_path">Image Path</label>
-              <input id="image_path" name="image_path" value={formData.image_path} onChange={handleChange} />
+            <label htmlFor="image">Image</label>
+            <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} />
+            {uploading && <p>Uploading...</p>}
+            {formData.image_path && <p>✅ Image uploaded</p>}
           </div>
 
           <div className="form-row">

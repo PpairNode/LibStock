@@ -26,6 +26,7 @@ node_modules/
 # production
 build/
 certs/
+uploads/
 
 # misc
 .DS_Store
