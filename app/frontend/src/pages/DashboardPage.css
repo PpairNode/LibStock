@@ -95,27 +95,31 @@
 /* Column selector toggle section */
 .column-selector {
   margin-bottom: 1rem;
-  background: #fff;
-  padding: 1rem;
-  border: 1px solid #ddd;
+  /*background: #fff;*/
+  padding: 0rem;
+  /*border: 1px solid #ddd;*/
   border-radius: 8px;
-}
-
-.toggle-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: 4px;
 }
 
 .toggle-btn {
-  padding: 8px 14px;
+  width: 80px;
+  height: 40px;
+  padding: 0 4px;
   background-color: #eee;
   border: 1px solid #ccc;
-  border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
+  font-size: clamp(0.5rem, 1vw, 0.7rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .toggle-btn:hover {
@@ -126,6 +130,24 @@
   background-color: #007bff;
   color: white;
   border-color: #007bff;
+}
+
+.fit-text {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.7rem;
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.item-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  object-fit: cover;
 }
 
 /* Buttons */

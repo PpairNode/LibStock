@@ -22,7 +22,7 @@ const optionalColumns = [
   { key: "creator", label: "Creator" },
   { key: "condition", label: "Condition" },
   { key: "creation_date", label: "Created" },
-  { key: "image_path", label: "Image Path" },
+  { key: "image_path", label: "Image" },
   { key: "number", label: "Number" },
   { key: "edition", label: "Edition" },
 ];
@@ -60,7 +60,7 @@ const DashboardPage = () => {
       // Reset if selected was the deleted object
       setSelectedItem((prevSelected) => {
         if (prevSelected?._id === itemId) {
-          return null;  // or undefined, whatever clears your selection
+          return null;
         }
         return prevSelected;
       });
@@ -190,14 +190,13 @@ const DashboardPage = () => {
       </div>
 
       <div className="column-selector">
-        <strong>Optional columns </strong>
         {optionalColumns.map((col) => (
           <button
             key={col.key}
             className={`toggle-btn ${visibleColumns.includes(col.key) ? "active" : ""}`}
             onClick={() => handleCheckboxChange(col.key)}
           >
-            {col.label}
+            <span className="fit-text">{col.label}</span>
           </button>
         ))}
       </div>
@@ -280,7 +279,7 @@ const DashboardPage = () => {
                             {col.key === "tags"
                               ? item[col.key]?.join(", ")
                               : col.key === "image_path"
-                              ? <img src={getPublicImageUrl(item[col.key])} alt="Item ICON" width="50" style={{ borderRadius: "4px" }} />
+                              ? <img src={getPublicImageUrl(item[col.key])} alt="Item ICON" className="item-icon" />
                               : col.key === "creation_date"
                               ? item[col.key]?.slice(0, 10)
                               :
