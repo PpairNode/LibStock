@@ -1,10 +1,12 @@
 # frontend/Dockerfile
 FROM node:20-alpine
 
+ARG REACT_APP_API_URL
+
 WORKDIR /app
 COPY . .
 RUN npm install
-RUN npm run build
+RUN REACT_APP_API_URL=$REACT_APP_API_URL npm run build
 
 # Install static server and serve the built files
 RUN npm install -g serve
