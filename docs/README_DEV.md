@@ -1,44 +1,104 @@
-# README
-## RUN APP DEV MODE
-### Database MONGODB
+# README for Developers - Run App in DEV MODE
+## MongoDB
+- Installation
 ```bash
+curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
+   sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg \
+   --dearmor
+
+echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] http://repo.mongodb.org/apt/debian bookworm/mongodb-org/8.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+
+sudo apt update
+sudo apt install -y mongodb-org
 sudo systemctl start mongod
 ```
 
-### Backend python3 Flask
-- `.env` file
+- Setup DB: update admin and setup password
 ```bash
-MONGO_HOST="127.0.0.1"
-MONGO_PORT=27017
-MONGO_SECRET="admin:admin"
-# MONGO_URI -> Do not set this var as it is only used in production for DNS resolution with mongo
-APP_SECRET_KEY=3d3f3fe087ec13c5b5213c8e2256e85acd61a50c7f521e01eab3a4e01d9c01a1
-REACT_HOST_ORIGIN="http://localhost:3000"
-```
-- Execute python flask
-```bash
-# Python3
-python3 run.py
+mongosh
+> use admin
+# admin DB full access to admin
+> db.createUser({user:"admin",pwd:passwordPrompt(),roles:[{role:"userAdminAnyDatabase",db:"admin"}]})
+# app DB full access to admin
+> db.updateUser("admin",{roles:[{role:"readWrite",db:"app"}]})
+> exit
+sudo vim /etc/mongod.conf  # Add security:\n\tauthorization: enabled
+sudo systemctl restart mongod
 ```
 
-### Frontend npm
-- Frontend `.env` file
+- Hash password for user `username`
 ```bash
-REACT_APP_API_URL=http://localhost:8000/api
+python3 -c "import bcrypt; print(bcrypt.hashpw(b'<PASSWORD>', bcrypt.gensalt()).decode())"
+```
+
+- Connect to DB and with admin and add `username` user with the hash created
+```bash
+mongosh --port 27017 -u admin -p
+> use app
+app> db.users.insertOne({username: "test", password: "<BCRYPT-PASS-HASH>", role: "user", createdAt: new Date()})
+app> db.users.createIndex({ username: 1 }, { unique: true })
+```
+
+## Backend
+- Prepare environment 
+```bash
+cd app/backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip3 install -r requirements.txt
+```
+
+- Craft the .env file for environment var and secrets
+```toml
+MONGO_HOST="127.0.0.1"
+MONGO_PORT=27017
+MONGO_SECRET="<mongodb-user>:<mongodb-password>"
+APP_SECRET_KEY=<app-secret>
+# Via direct access
+REACT_HOST_ORIGIN="http://localhost:3000"
+# Via NGINX
+REACT_HOST_ORIGIN="https://<FQDN>"
+```
+
+Replace all the `<>` with the values you set. For the APP_SECRET_KEY you can run this: `python3 -c "import secrets; print(secrets.token_hex())"`
+
+- Run server
+```bash
+# Python
+python3 run.py
+# Gunicorn
+gunicorn run:app
+```
+
+## Frontend
+
+
+### Installations
+- Craft frontend folder for the app
+```bash
+npx create-react-app frontend
+cd frontend
+```
+- Install dependencies
+```bash
+npm install react-router-dom
+npm install react-scripts --save  # If missing
+npm install axios
+npm audit fix  # If vuln errors
 ```
 - Execute npm
 ```bash
-npm start
+REACT_APP_API_URL=http://localhost:8000/api npm start
 ```
 
-## TESTS
-### Login user
+# TESTS
+## Login user - Via direct access
 ```bash
-curl -X POST -k https://127.0.0.1:5000/login --data "username=XXX&password=XXX"
+curl -X POST -k http://localhost:3000/login --data "username=XXX&password=XXX"
 # Supposed to be 200
 ```
 
-### DOCKER and test login
+## Login user - Via DOCKERIZED setup
 - Run docker, install curl and test login
 ```bash
 docker exec -it backend /bin/bash
@@ -46,11 +106,5 @@ apt-get update && apt-get install -y curl
 curl -X POST http://localhost:8000/api/login -d '{"username":"test","password":"test"}' -H "Content-Type: application/json"
 ```
 
-## Installations
-### React Project
-- Craft frontend folder for the app:
-```bash
-npx create-react-app frontend
-cd frontend
-```
+
 
