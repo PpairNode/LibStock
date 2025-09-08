@@ -1,12 +1,14 @@
 // src/pages/LoginPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "../api/axiosConfig";
 import "./LoginPage.css"
 
 const LoginPage = ({ setIsAuthenticated }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -70,16 +72,20 @@ const LoginPage = ({ setIsAuthenticated }) => {
           />
         </div>
 
-        <div className="form-group">
+        <div className="form-group" style={{ position: "relative" }}>
           <label htmlFor="password">Password</label>
           <input
             id="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             className="form-input"
+            style={{ paddingRight: "2.5rem" }}
           />
+          <span className="password-toggle" onClick={() => setShowPassword(prev => !prev)}>
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
         </div>
 
         <button type="submit" className="login-button">

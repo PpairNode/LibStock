@@ -16,7 +16,7 @@ USERNAME=<USER-OF-WEBSITE-NAME>
 BCRYPT_PASSWORD_HASH=<USER-OF-WEBSITE-BCRYPT-PASSWORD-HASH>  # Can be generated with `python3 -c "import bcrypt; print(bcrypt.hashpw(b'<PASSWORD>', bcrypt.gensalt()).decode())"`
 
 # Frontend Setup
-REACT_APP_API_URL=https://FQDN/api
+VITE_API_URL=https://FQDN/api
 ```
 
 ## Run
