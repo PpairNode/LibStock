@@ -1,6 +1,10 @@
 .App-logo {
   height: 40vmin;
+  width: 40vmin;
   pointer-events: none;
+  display: block;
+  margin: 0 auto;
+  transform-origin: center center;
 }
 
 @media (prefers-reduced-motion: no-preference) {
