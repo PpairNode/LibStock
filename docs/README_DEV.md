@@ -31,11 +31,11 @@ sudo systemctl restart mongod
 python3 -c "import bcrypt; print(bcrypt.hashpw(b'<PASSWORD>', bcrypt.gensalt()).decode())"
 ```
 
-- Connect to DB and with admin and add `username` user with the hash created
+- Connect to DB and with admin and add `<USERNAME>` user with the hash created
 ```bash
 mongosh --port 27017 -u admin -p
 > use app
-app> db.users.insertOne({username: "test", password: "<BCRYPT-PASS-HASH>", role: "user", createdAt: new Date()})
+app> db.users.insertOne({username: "<USERNAME>", password: "<BCRYPT-PASS-HASH>", role: "user", createdAt: new Date()})
 app> db.users.createIndex({ username: 1 }, { unique: true })
 ```
 
