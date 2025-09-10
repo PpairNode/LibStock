@@ -68,22 +68,13 @@ def delete_category():
         return jsonify({"message": "Item not found"}), 404
 
 
-@api_bp.route("/dashboard", methods=["GET"])
-@login_required
-def dashboard():
-    return jsonify({
-        "message": f"Welcome {current_user.username}!",
-        "username": current_user.username
-    }), 200
-
-
 @api_bp.route("/items", methods=["GET"])
 @login_required
 def list_items():
     items = list(db.items.find({}))
     for item in items:
         item["_id"] = str(item["_id"])  # Convert ObjectId to string
-        item["creation_date"] = item["creation_date"].isoformat() if "creation_date" in item else None
+        item["date_added"] = item["date_added"].isoformat() if "date_added" in item else None
     return jsonify(items), 200
 
 
@@ -106,8 +97,8 @@ def add_item():
             "name": "",
             "description": "",
             "value": 0.0,
-            "creation_date": "",
-            "item_date": "",
+            "date_created": "",
+            "date_added": "",
             "location": "",
             "creator": "",
             "tags": [],
@@ -132,8 +123,8 @@ def add_item():
             "name": data["name"],
             "description": data["description"] or "",
             "value": round(float(data["value"]) or 0),
-            "creation_date": datetime.datetime.now(datetime.timezone.utc),
-            "item_date": data["item_date"] or "",
+            "date_created": data["date_created"] or "",
+            "date_added": datetime.datetime.now(datetime.timezone.utc),
             "location": data["location"] or "",
             "creator": current_user.username,
             "tags": data["tags"],
@@ -228,7 +219,7 @@ def update_item(id):
         "name": data.get("name"),
         "description": data.get("description"),
         "value": round(float(data.get("value") or 0), 2),
-        "item_date": data.get("item_date"),
+        "date_created": data.get("date_created"),
         "location": data.get("location"),
         "tags": data.get("tags"),
         "creator": data.get("creator"),

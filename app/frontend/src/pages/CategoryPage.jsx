@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import "./DashboardPage.css";
 import "./AddItemPage.css";
 import "../components/Form.css";
@@ -10,6 +11,7 @@ const AddCategoryPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [categories, setCategories] = useState([]);
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -62,10 +64,10 @@ const AddCategoryPage = () => {
       {success && <p style={{ color: "green" }}>{success}</p>}
       
       <div style={{ marginBottom: "1rem" }}>
-        <h2>Manage Categories</h2><br/>
+        <h2>{t('category_head_text')}</h2><br/>
         <form onSubmit={handleSubmit} className="item-form-grid">
           <div className="form-group">
-            <label htmlFor="name">Name*</label>
+            <label htmlFor="name">{t('category_name')}*</label>
             <input
               id="name"
               name="name"
@@ -73,7 +75,7 @@ const AddCategoryPage = () => {
               onChange={(e) => setName(e.target.value)}
               required
             />
-            <button type="submit" className="form-button">Add Category</button>
+            <button type="submit" className="form-button">{t('add_text')}</button>
           </div>
         </form>
       </div>
@@ -82,8 +84,8 @@ const AddCategoryPage = () => {
         <table className="item-table">
           <thead>
               <tr>
-              <th>Category</th>
-              <th>Delete</th>
+              <th>{t('category_text')}</th>
+              <th></th>
               </tr>
           </thead>
           <tbody>
@@ -102,7 +104,7 @@ const AddCategoryPage = () => {
                       }}
                       className="delete-button"
                   >
-                      Delete
+                      {t('delete_text')}
                   </button>
                   </td>
               </tr>

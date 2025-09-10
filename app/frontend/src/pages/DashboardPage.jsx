@@ -1,6 +1,7 @@
 // src/pages/DashboardPage.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import axios from "../api/axiosConfig";
 import "./DashboardPage.css";
 import getPublicImageUrl from "../utils/Media";
@@ -8,41 +9,42 @@ import ImageLightbox from "../components/ImageLightbox";
 
 
 
-const requiredColumns = [
-  { key: "name", label: "Name" },
-  { key: "category", label: "Category" },
-  { key: "value", label: "Value" },
-  { key: "item_date", label: "Item Date" },
-];
-const optionalColumns = [
-  { key: "owner", label: "Owner" },
-  { key: "description", label: "Description" },
-  { key: "tags", label: "Tags" },
-  { key: "location", label: "Location" },
-  { key: "creator", label: "Creator" },
-  { key: "condition", label: "Condition" },
-  { key: "creation_date", label: "Created" },
-  { key: "image_path", label: "Image" },
-  { key: "number", label: "Number" },
-  { key: "edition", label: "Edition" },
-];
 
 
 const DashboardPage = () => {
+  const { t } = useTranslation();
   const [message, setMessage] = useState("");
-  const [username, setUsername] = useState("");
 
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
-
+  
   const [selectedItem, setSelectedItem] = useState(null);
-
+  
   const [selectedCategory, setSelectedCategory] = useState(() => {
-    return localStorage.getItem("selectedCategory") || "All";
+    return localStorage.getItem("selectedCategory") || t('selected_category_all');
   });
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
+  
+  
+  const requiredColumns = [
+    { key: "name", label: t('item_name') },
+    { key: "category", label: t('item_category') },
+    { key: "value", label: t('item_value') },
+    { key: "date_added", label: t('item_date_added') },
+  ];
+  const optionalColumns = [
+    { key: "owner", label: t('item_owner') },
+    { key: "description", label: t('item_description') },
+    { key: "tags", label: t('item_tags_simple') },
+    { key: "location", label: t('item_location') },
+    { key: "creator", label: t('item_creator') },
+    { key: "condition", label: t('item_condition') },
+    { key: "date_created", label: t('item_date_created') },
+    { key: "image_path", label: 'Image' },
+    { key: "number", label: t('item_number') },
+    { key: "edition", label: t('item_edition') },
+  ];
   const navigate = useNavigate();
   
   const handleDelete = async (itemId) => {
@@ -114,25 +116,6 @@ const DashboardPage = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const response = await axios.get("/dashboard");
-        setMessage(response.data.message);
-        setUsername(response.data.username);
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          window.location.href = "/login";
-        } else {
-          console.error("Error fetching dashboard:", error.message);
-          navigate("/error", { state: { message: `Error fetching dashboard: ${error.message}` }});
-        }
-      }
-    };
-
-    fetchDashboard();
-  }, [navigate]);
-
-  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get("/categories");
@@ -147,7 +130,7 @@ const DashboardPage = () => {
         }
 
         const categoryNames = response.data.map(cat => cat.name);
-        setCategories(["All", ...categoryNames]);
+        setCategories([t('selected_category_all'), ...categoryNames]);
       } catch (error) {
         console.error("Error fetching categories:", error.message);
         navigate("/error", { state: { message: `Error fetching categories: ${error.message}` }});
@@ -159,14 +142,14 @@ const DashboardPage = () => {
   
   const filteredItems = items.filter((item) => {
     // Filter by category
-    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
+    const matchesCategory = selectedCategory === t('selected_category_all') || item.category === selectedCategory;
     // Filter by search term
     const search = searchTerm.toLowerCase();
     const matchesSearch =
       item.name?.toLowerCase().includes(search) ||
       item.creator?.toLowerCase().includes(search) ||
       item.owner?.toLowerCase().includes(search) ||
-      item.creation_date?.toLowerCase().includes(search) ||
+      item.date_created?.toLowerCase().includes(search) ||
       (item.tags && item.tags.some(tag => tag.toLowerCase().includes(search)));
 
     return matchesCategory && matchesSearch;
@@ -182,10 +165,10 @@ const DashboardPage = () => {
   return (
     <div className="container">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2>Dashboard | <strong>{message}</strong> (logged in as: {username})</h2>
+        <h2>{t('dashboard')}</h2>
         <div className="button-group">
-            <Link to="/item/add" className="nav-button">Add Item</Link>
-            <Link to="/category/add" className="nav-button">Add Category</Link>
+            <Link to="/item/add" className="nav-button">{t('add_text')} {t('item_text')}</Link>
+            <Link to="/category/add" className="nav-button">{t('add_text')} {t('item_category')}</Link>
         </div>
       </div>
 
@@ -203,7 +186,7 @@ const DashboardPage = () => {
 
       <div className="filter-bar">
         <div className="filter-group">
-          <label htmlFor="categoryFilter">Category:</label>
+          <label htmlFor="categoryFilter">{t('category_text')}:</label>
           <select
             id="categoryFilter"
             value={selectedCategory}
@@ -220,18 +203,18 @@ const DashboardPage = () => {
         </div>
 
         <div className="search-group">
-          <label htmlFor="categoryFilter">Search:</label>
+          <label htmlFor="categoryFilter">{t('search_text')}:</label>
           <input
             type="text"
-            placeholder="Search items..."
+            placeholder={t('search_bar_text')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
         <div className="value-display">
-          <div className="label">Total Value</div>
-          <div className="value">${totalValue.toFixed(2)}</div>
+          <div className="label">{t('total_value')}</div>
+          <div className="value">{totalValue.toFixed(2)}{t('currency')}</div>
         </div>
       </div>
 
@@ -244,7 +227,7 @@ const DashboardPage = () => {
               <table className="item-table">
                 <thead>
                   <tr>
-                    <th>Actions</th>
+                    <th>{t('actions')}</th>
                     {requiredColumns.map(
                       (col) => <th key={col.key}>{col.label}</th>
                     )}
@@ -270,8 +253,8 @@ const DashboardPage = () => {
                       {/* All other columns */}
                       <td>{item.name}</td>
                       <td>{item.category}</td>
-                      <td>${item.value}</td>
-                      <td>{item.item_date?.slice(0, 10)}</td>
+                      <td>{item.value}{t('currency')}</td>
+                      <td>{item.date_added?.slice(0, 10)}</td>
                       {optionalColumns.map(
                       (col) =>
                         visibleColumns.includes(col.key) && (
@@ -280,7 +263,7 @@ const DashboardPage = () => {
                               ? item[col.key]?.join(", ")
                               : col.key === "image_path"
                               ? <img src={getPublicImageUrl(item[col.key])} alt="Item ICON" className="item-icon" />
-                              : col.key === "creation_date"
+                              : col.key === "date_created"
                               ? item[col.key]?.slice(0, 10)
                               :
                               item[col.key]
@@ -298,25 +281,33 @@ const DashboardPage = () => {
           <div className="details-section">
             {selectedItem ? (
               <>
-                <h3>Item Details</h3>
-                <p><strong>Name:</strong> {selectedItem.name}</p>
-                <p><strong>Description:</strong> {selectedItem.description}</p>
-                <p><strong>Category:</strong> {selectedItem.category}</p>
-                <p><strong>Value:</strong> ${selectedItem.value}</p>
-                <p><strong>Date:</strong> {selectedItem.item_date}</p>
-                <p><strong>Location:</strong> {selectedItem.location}</p>
-                <p><strong>Creator:</strong> {selectedItem.creator}</p>
-                <p><strong>Owner:</strong> {selectedItem.owner}</p>
-                <p><strong>Tags:</strong> {selectedItem.tags?.join(", ")}</p>
-                <p><strong>Comment:</strong> {selectedItem.comment}</p>
-                <p><strong>Condition:</strong> {selectedItem.condition}</p>
-                <p><strong>Number:</strong> {selectedItem.number}</p>
-                <p><strong>Edition:</strong> {selectedItem.edition}</p>
+                <h3 style={{ textAlign: "center" }}>{t('item_details')}</h3>
+                <p><strong>{t('item_name')}:</strong> {selectedItem.name}</p>
+                <p><strong>{t('item_description')}:</strong> {selectedItem.description}</p>
+                <p><strong>{t('item_category')}:</strong> {selectedItem.category}</p>
+                <p><strong>{t('item_value')}:</strong> {selectedItem.value}{t('currency')}</p>
+                <p><strong>{t('item_date_added')}:</strong> {selectedItem.date_added.slice(0, 10)}</p>
+                <p><strong>{t('item_date_created')}:</strong> {selectedItem.date_created}</p>
+                <p><strong>{t('item_location')}:</strong> {selectedItem.location}</p>
+                <p><strong>{t('item_creator')}:</strong> {selectedItem.creator}</p>
+                <p><strong>{t('item_owner')}:</strong> {selectedItem.owner}</p>
+                <div>
+                  <strong>{t('item_tags_simple')}:</strong>
+                  <div className="tags-container">
+                    {selectedItem.tags?.map((tag, index) => (
+                      <span key={index} className="tag-pill">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+                <p><strong>{t('item_comment')}:</strong> {selectedItem.comment}</p>
+                <p><strong>{t('item_condition')}:</strong> {selectedItem.condition}</p>
+                <p><strong>{t('item_number')}:</strong> {selectedItem.number}</p>
+                <p><strong>{t('item_edition')}:</strong> {selectedItem.edition}</p>
                 <ImageLightbox src={getPublicImageUrl(selectedItem.image_path)} alt={selectedItem.name || "Item image"} />
               </>
               ) : (
               <p style={{ color: "#888", fontStyle: "italic" }}>
-                No item selected. Click a row to view details.
+                {t('no_item_selected')}
               </p>
             )}
           </div>

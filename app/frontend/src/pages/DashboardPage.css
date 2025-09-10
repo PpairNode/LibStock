@@ -71,7 +71,7 @@
 
 .item-table th,
 .item-table td {
-  padding: 12px 16px;
+  padding: 4px 8px;
   border-bottom: 1px solid #eee;
   text-align: left;
   white-space: nowrap;
@@ -105,7 +105,7 @@
 }
 
 .toggle-btn {
-  width: 80px;
+  width: 100px;
   height: 40px;
   padding: 0 4px;
   background-color: #eee;
@@ -266,4 +266,20 @@
 
 .value-display .value {
   font-size: 1.2rem;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.tag-pill {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 0.85rem;
 }

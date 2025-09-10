@@ -2,9 +2,12 @@
 import React, { useEffect } from "react";
 import axios from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthContext";
 
-const LogoutPage = ({ setIsAuthenticated }) => {
+
+const LogoutPage = () => {
   const navigate = useNavigate();
+  const { setIsAuthenticated, setUsername } = useAuth();
 
   useEffect(() => {
     const logout = async () => {
@@ -13,7 +16,7 @@ const LogoutPage = ({ setIsAuthenticated }) => {
 
         if (response.status === 200) {
           setIsAuthenticated(false);
-          console.log(response.data.message);
+          setUsername(null);
           navigate("/login");
         }
       } catch (error) {
@@ -22,7 +25,7 @@ const LogoutPage = ({ setIsAuthenticated }) => {
     };
 
     logout();
-  }, [navigate, setIsAuthenticated]);
+  }, [navigate, setIsAuthenticated, setUsername]);
 
   return <p>Logging out...</p>;
 };

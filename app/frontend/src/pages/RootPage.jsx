@@ -1,11 +1,13 @@
 // RootPage.jsx
 import React, { useState, useEffect } from "react";
-import logo from "../logo.svg";
+import { useTranslation } from 'react-i18next';
+import '../components/Translation';
 import "../App.css"
 
 
 const RootPage = () => {
   const [nyTime, setNyTime] = useState("");
+  const { t } = useTranslation();
 
   useEffect(() => {
     const updateTime = () => {
@@ -28,10 +30,10 @@ const RootPage = () => {
 
   return (
     <div className="App-content">
-      <h1>Hello from the root page!</h1>
-      <img src={logo} className="App-logo" alt="logo" />
+      <h1>{t('welcome_page_text')}</h1>
+      <img src='/logo.svg' className="App-logo" alt="logo" />
       <p style={{ fontSize: "1.2rem", marginTop: "1rem" }}>
-        Current Time in New York: <strong>{nyTime}</strong>
+        {t('current_time_text')} New York: <strong>{nyTime}</strong>
       </p>
     </div>
   );

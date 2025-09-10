@@ -4,12 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "../api/axiosConfig";
 import "./LoginPage.css"
+import { useTranslation } from 'react-i18next';
+import { useAuth } from "../components/AuthContext";
 
-const LoginPage = ({ setIsAuthenticated }) => {
-  const [username, setUsername] = useState("");
+
+const LoginPage = () => {
+  const { setUsername, setIsAuthenticated } = useAuth();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
+  const [usernameInput, setUsernameInput] = useState("");
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,9 +37,10 @@ const LoginPage = ({ setIsAuthenticated }) => {
     setError(null);
 
     try {
-      const response = await axios.post("/login", { username, password });
+      const response = await axios.post("/login", { username: usernameInput, password });
       if (response.status === 200) {
         setIsAuthenticated(true);
+        setUsername(usernameInput);
         const redirectUrl = response.data.redirect || "/dashboard";
         navigate(redirectUrl);
       }
@@ -55,17 +61,17 @@ const LoginPage = ({ setIsAuthenticated }) => {
   return (
     <div className="login-container">
       <form className="login-form" onSubmit={handleLogin}>
-        <h2 className="login-title">Login</h2>
+        <h2 className="login-title">{t('login_text')}</h2>
 
         {error && <p className="login-error">{error}</p>}
 
         <div className="form-group">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">{t('username')}</label>
           <input
             id="username"
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={usernameInput}
+            onChange={(e) => setUsernameInput(e.target.value)}
             required
             autoFocus
             className="form-input"
@@ -73,7 +79,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
         </div>
 
         <div className="form-group" style={{ position: "relative" }}>
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">{t('password')}</label>
           <input
             id="password"
             type={showPassword ? "text" : "password"}
@@ -89,7 +95,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
         </div>
 
         <button type="submit" className="login-button">
-          Login
+          {t('login')}
         </button>
       </form>
     </div>
