@@ -41,7 +41,7 @@ const DashboardPage = () => {
     { key: "creator", label: t('item_creator') },
     { key: "condition", label: t('item_condition') },
     { key: "date_created", label: t('item_date_created') },
-    { key: "image_path", label: 'Image' },
+    { key: "image_path", label: t('item_image') },
     { key: "number", label: t('item_number') },
     { key: "edition", label: t('item_edition') },
   ];
@@ -248,7 +248,7 @@ const DashboardPage = () => {
                     >
                       {/* Actions column (update/delete) */}
                       <td className="actions-button" style={{ width: "30px" }}>
-                        <Link to={`/item/update/${item._id}`} className="nav-button nav-button-small">+</Link>
+                        <Link to={`/item/update/${item._id}`} className="nav-button nav-button-small">O</Link>
                       </td>
                       <td className="actions-button" style={{ width: "30px" }}>
                         <button onClick={() => handleDelete(item._id)} className="delete-button">X</button>

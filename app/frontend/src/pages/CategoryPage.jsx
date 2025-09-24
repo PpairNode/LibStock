@@ -83,7 +83,7 @@ const AddCategoryPage = () => {
       <div className="table-wrapper">
         <table className="item-table">
           <thead>
-              <tr>
+              <tr style={{ backgroundColor: "#f0f4f8" }}>
               <th>{t('delete_text')}</th>
               <th>{t('category_text')}</th>
               </tr>
