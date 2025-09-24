@@ -132,7 +132,7 @@ const EditItemPage = () => {
 
   return (
     <div className="container">
-      <h2>{t('item_edit_text')}</h2>
+      <h2>{t('edit_item_text')}</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <form onSubmit={handleSubmit} className="item-form-grid">
