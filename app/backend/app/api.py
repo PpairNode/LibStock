@@ -22,6 +22,10 @@ def get_current_user():
         "username": current_user.username
     })
 
+def check_ressource_auth():
+    # TODO: check current DB of user / maybe add max DB (20)?
+    pass
+
 
 @api_bp.route("/categories", methods=["GET"])
 @login_required
