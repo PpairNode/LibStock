@@ -226,8 +226,9 @@ const DashboardPage = () => {
             <div className="table-wrapper">
               <table className="item-table">
                 <thead>
-                  <tr>
-                    <th>{t('actions')}</th>
+                  <tr style={{ backgroundColor: "#f0f4f8" }}>
+                    <th style={{ width: "30px" }}>{t('action-update')}</th>
+                    <th style={{ width: "30px" }}>{t('action-delete')}</th>
                     {requiredColumns.map(
                       (col) => <th key={col.key}>{col.label}</th>
                     )}
@@ -240,15 +241,17 @@ const DashboardPage = () => {
                 <tbody>
                   {filteredItems
                     .map((item, idx) => (
-                    <tr 
+                    <tr
                       key={idx}
-                      onClick={() => setSelectedItem({ ...item})}
-                      style={{ cursor: "pointer", backgroundColor: selectedItem === item ? "#f0f0f0" : "white" }}
+                      onClick={() => setSelectedItem({...item})}
+                      style={{ cursor: "pointer", backgroundColor: selectedItem === item ? "#000000" : "#ffffff" }}
                     >
                       {/* Actions column (update/delete) */}
-                      <td className="actions-button">
-                        <Link to={`/item/update/${item._id}`} className="update-button">+</Link>
-                        <button onClick={() => handleDelete(item._id)} className="delete-button">+</button>
+                      <td className="actions-button" style={{ width: "30px" }}>
+                        <Link to={`/item/update/${item._id}`} className="nav-button nav-button-small">+</Link>
+                      </td>
+                      <td className="actions-button" style={{ width: "30px" }}>
+                        <button onClick={() => handleDelete(item._id)} className="delete-button">X</button>
                       </td>
                       {/* All other columns */}
                       <td>{item.name}</td>
