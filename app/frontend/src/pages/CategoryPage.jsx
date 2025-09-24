@@ -75,7 +75,7 @@ const AddCategoryPage = () => {
               onChange={(e) => setName(e.target.value)}
               required
             />
-            <button type="submit" className="form-button">{t('add_text')}</button>
+            <button type="submit" className="nav-button">{t('add_text')}</button>
           </div>
         </form>
       </div>
@@ -84,8 +84,8 @@ const AddCategoryPage = () => {
         <table className="item-table">
           <thead>
               <tr>
+              <th>{t('delete_text')}</th>
               <th>{t('category_text')}</th>
-              <th></th>
               </tr>
           </thead>
           <tbody>
@@ -94,9 +94,8 @@ const AddCategoryPage = () => {
                   key={idx}
                   style={{ cursor: "pointer", backgroundColor: "white" }}
               >
-                  <td>{cat.name}</td>
                   {/* DELETE button */}
-                  <td>
+                  <td style={{ width: "30px" }}>
                   <button
                       onClick={(e) => {
                       e.stopPropagation(); // prevent row click
@@ -104,9 +103,10 @@ const AddCategoryPage = () => {
                       }}
                       className="delete-button"
                   >
-                      {t('delete_text')}
+                    X
                   </button>
                   </td>
+                  <td>{cat.name}</td>
               </tr>
               ))}
           </tbody>
