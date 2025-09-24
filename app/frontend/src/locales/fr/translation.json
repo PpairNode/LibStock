@@ -10,7 +10,7 @@
 
   "current_time_text": "Heure locale à",
 
-  "add_text": "AJOUT",
+  "add_text": "AJT",
   "delete_text": "SUP",
 
   "add_new_item_text": "AJOUT OBJET",
@@ -19,6 +19,7 @@
   "edit_text": "EDITER",
   "item_owner": "PROPRIETAIRE",
   "item_name": "NOM",
+  "item_serie": "SERIE",
   "item_description": "DESCRIPTION",
   "item_value": "VALEUR",
   "item_date_created": "PARUTION",

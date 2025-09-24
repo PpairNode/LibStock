@@ -42,6 +42,7 @@ const EditItemPage = () => {
 
         setFormData({
           name: item.name || "",
+          serie: item.serie || "",
           description: item.description || "",
           value: item.value || 0,
           date_created: item.date_created?.slice(0, 10) || today,
@@ -148,6 +149,11 @@ const EditItemPage = () => {
           </div>
 
           <div className="form-row">
+            <label htmlFor="serie">{t('item_serie')}</label>
+            <input id="serie" name="serie" value={formData.serie} onChange={handleChange} required />
+          </div>
+
+          <div className="form-row">
             <label htmlFor="description">{t('item_description')}</label>
             <textarea id="description" name="description" value={formData.description} onChange={handleChange} />
           </div>
@@ -206,7 +212,7 @@ const EditItemPage = () => {
           </div>
 
           <div className="form-row">
-            <label htmlFor="number">{t('item_edition')}</label>
+            <label htmlFor="number">{t('item_number')}</label>
             <input id="number" name="number" type="number" value={formData.number} onChange={handleChange} />
           </div>
 

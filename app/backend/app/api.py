@@ -95,6 +95,7 @@ def add_item():
         template = {
             "owner": current_user.username,
             "name": "",
+            "serie": "",
             "description": "",
             "value": 0.0,
             "date_created": "",
@@ -114,13 +115,14 @@ def add_item():
     else:  # POST
         data = request.get_json()
 
-        required_fields = ["owner", "name", "value", "tags", "condition"]
+        required_fields = ["owner", "name", "value", "category"]
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Missing fields"}), 400
 
         item = {
             "owner": data["owner"],
             "name": data["name"],
+            "serie": data["serie"],
             "description": data["description"] or "",
             "value": round(float(data["value"]) or 0),
             "date_created": data["date_created"] or "",
@@ -217,6 +219,7 @@ def update_item(id):
     # Validate fields here as needed
     update_fields = {
         "name": data.get("name"),
+        "serie": data.get("serie"),
         "description": data.get("description"),
         "value": round(float(data.get("value") or 0), 2),
         "date_created": data.get("date_created"),

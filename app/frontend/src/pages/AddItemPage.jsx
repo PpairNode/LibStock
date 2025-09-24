@@ -16,6 +16,7 @@ const AddItemPage = () => {
   const initialFormData = {
     owner: "",
     name: "",
+    serie: "",
     description: "",
     value: 0,
     date_created: today,
@@ -147,6 +148,11 @@ const AddItemPage = () => {
           <div className="form-row">
               <label htmlFor="name">{t('item_name')}*</label>
               <input id="name" name="name" value={formData.name} onChange={handleChange} required />
+          </div>
+
+          <div className="form-row">
+              <label htmlFor="serie">{t('item_serie')}</label>
+              <input id="serie" name="serie" value={formData.serie} onChange={handleChange} required />
           </div>
 
           <div className="form-row">

@@ -34,6 +34,7 @@ const DashboardPage = () => {
     { key: "date_added", label: t('item_date_added') },
   ];
   const optionalColumns = [
+    { key: "serie", label: t('item_serie') },
     { key: "owner", label: t('item_owner') },
     { key: "description", label: t('item_description') },
     { key: "tags", label: t('item_tags_simple') },
@@ -286,6 +287,7 @@ const DashboardPage = () => {
               <>
                 <h3 style={{ textAlign: "center" }}>{t('item_details')}</h3>
                 <p><strong>{t('item_name')}:</strong> {selectedItem.name}</p>
+                <p><strong>{t('item_serie')}:</strong> {selectedItem.serie}</p>
                 <p><strong>{t('item_description')}:</strong> {selectedItem.description}</p>
                 <p><strong>{t('item_category')}:</strong> {selectedItem.category}</p>
                 <p><strong>{t('item_value')}:</strong> {selectedItem.value}{t('currency')}</p>
