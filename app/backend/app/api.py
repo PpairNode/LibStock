@@ -71,14 +71,10 @@ def add_category():
         return jsonify({ "message": "Category added", "id": str(result.inserted_id) }), 201
 
 
-@api_bp.route("/category/delete", methods=["DELETE"])
+@api_bp.route("/category/delete/<category_id>", methods=["DELETE"])
 @login_required
-def delete_category():
-    data = request.get_json()
-    item_id = data.get("id")
-    if not item_id:
-        return jsonify({"message": "Item ID is required"}), 400
-    result = db.categories.delete_one({"_id": ObjectId(item_id)})
+def delete_category(category_id):
+    result = db.categories.delete_one({"_id": ObjectId(category_id)})
     if result.deleted_count == 1:
         return jsonify({"message": "Item deleted successfully"}), 200
     else:

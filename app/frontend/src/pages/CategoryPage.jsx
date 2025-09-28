@@ -30,14 +30,12 @@ const AddCategoryPage = () => {
     }
   };
 
-  const handleDelete = async (itemId) => {
+  const handleDelete = async (id) => {
     try {
-      await axios.delete("/category/delete", {
-        data: { id: itemId },
-      });
+      await axios.delete(`/category/delete/${id}`);
 
       // Remove item from local state
-      setCategories((prevItems) => prevItems.filter((cat) => cat._id !== itemId));
+      setCategories((prevItems) => prevItems.filter((cat) => cat._id !== id));
     } catch (error) {
       console.error("Error deleting category:", error.message);
       setError("Failed to delete category.");

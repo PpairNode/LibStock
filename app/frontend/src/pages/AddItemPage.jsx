@@ -149,10 +149,10 @@ const AddItemPage = () => {
 
   return (
     <div className="container">
-      <h2>{t('add_new_item_text')} to container: {container?.name || containerId}</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
 
+      <h2>{t('add_new_item_text')} to container: {container?.name || containerId}</h2>
       <form onSubmit={handleSubmit} className="item-form-grid">
         <div className="form-group">
           <div className="form-row">
