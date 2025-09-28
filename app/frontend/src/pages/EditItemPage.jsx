@@ -11,7 +11,8 @@ const EditItemPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const today = new Date().toISOString().split("T")[0];
-
+  
+  const { containerId, id: itemId } = useParams();
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -37,7 +38,7 @@ const EditItemPage = () => {
   useEffect(() => {
     const fetchItem = async () => {
       try {
-        const res = await axios.get(`/item/update/${id}`);
+        const res = await axios.get(`/container/${containerId}/item/update/${itemId}`);
         const item = res.data;
 
         setFormData({
@@ -123,7 +124,7 @@ const EditItemPage = () => {
     };
 
     try {
-      await axios.post(`/item/update/${id}`, updatedItem);
+      await axios.post(`/container/${containerId}/item/update/${id}`, updatedItem);
       navigate("/dashboard");
     } catch (err) {
       console.error("Update failed:", err.message);
@@ -150,7 +151,7 @@ const EditItemPage = () => {
 
           <div className="form-row">
             <label htmlFor="serie">{t('item_serie')}</label>
-            <input id="serie" name="serie" value={formData.serie} onChange={handleChange} required />
+            <input id="serie" name="serie" value={formData.serie} onChange={handleChange} />
           </div>
 
           <div className="form-row">
@@ -165,7 +166,7 @@ const EditItemPage = () => {
 
           <div className="form-row">
             <label htmlFor="date_created">{t('item_date_created')}*</label>
-            <input id="date_created" name="date_created" type="date" value={formData.item_date} onChange={handleChange} />
+            <input id="date_created" name="date_created" type="date" value={formData.date_created} onChange={handleChange} />
           </div>
 
           <div className="form-row">

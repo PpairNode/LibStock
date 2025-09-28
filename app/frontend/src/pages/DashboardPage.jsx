@@ -13,7 +13,6 @@ import ImageLightbox from "../components/ImageLightbox";
 
 const DashboardPage = () => {
   const { t } = useTranslation();
-  const [message, setMessage] = useState("");
 
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
@@ -23,6 +22,11 @@ const DashboardPage = () => {
   const [selectedCategory, setSelectedCategory] = useState(() => {
     return localStorage.getItem("selectedCategory") || t('selected_category_all');
   });
+  const [containers, setContainers] = useState([]);
+  const [selectedContainer, setSelectedContainer] = useState(() => {
+    return localStorage.getItem("selectedContainer") || null;
+  });
+
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -53,7 +57,7 @@ const DashboardPage = () => {
     // if (!window.confirm("Are you sure you want to delete this item?")) return;
 
     try {
-      await axios.delete("/item/delete", {
+      await axios.delete(`/container/${selectedContainer}/item/delete`, {
         data: { id: itemId },
       });
 
@@ -92,10 +96,15 @@ const DashboardPage = () => {
   };
 
   useEffect(() => {
+    if (!selectedContainer) return;
+
+    // Keep selected one on refresh
+    localStorage.setItem("selectedContainer", selectedContainer);
+
     const fetchItems = async () => {
       console.log("Fetching items...")
       try {
-        const response = await axios.get("/items");
+        const response = await axios.get(`/containers/${selectedContainer}/items`)
         // Check if data is an array
         if (!Array.isArray(response.data)) {
           throw new Error("Invalid response format");
@@ -107,14 +116,16 @@ const DashboardPage = () => {
           console.error("User not authenticated");
           navigate("/login");
         } else {
-          console.error("Error fetching dashboard columns:", error.message);
-          navigate("/error", { state: { message: `Error fetching dashboard columns: ${error.message}` }});
+          /* TODO: Handle how to check if selectedContainer is still present, if not reset it */
+          setSelectedContainer(null)
+          /*console.error("Error fetching dashboard columns:", error.message);
+          navigate("/error", { state: { message: `Error fetching dashboard columns: ${error.message}` }});*/
         }
       }
     };
 
     fetchItems();
-  }, [navigate]);
+  }, [selectedContainer, navigate]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -139,6 +150,34 @@ const DashboardPage = () => {
     };
 
     fetchCategories();
+  }, [navigate]);
+
+  useEffect(() => {
+    const fetchContainers = async () => {
+      try {
+        const response = await axios.get("/containers");
+        if (!Array.isArray(response.data)) {
+          console.error("Expected an array but got:", response.data);
+          navigate("/error", {
+            state: {
+              message: `Error fetching containers: Expected an array but got ${typeof response.data}`
+            }
+          });
+          return;
+        }
+
+        const containerNames = response.data.map(container => container.name);
+        setContainers(response.data.map(container => ({
+          id: container._id,
+          name: container.name
+        })));
+      } catch (error) {
+        console.error("Error fetching containers:", error.message);
+        navigate("/error", { state: { message: `Error fetching containers: ${error.message}` }});
+      }
+    };
+
+    fetchContainers();
   }, [navigate]);
   
   const filteredItems = items.filter((item) => {
@@ -168,8 +207,17 @@ const DashboardPage = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2>{t('dashboard')}</h2>
         <div className="button-group">
-            <Link to="/item/add" className="nav-button">{t('add_text')} {t('item_text')}</Link>
-            <Link to="/category/add" className="nav-button">{t('add_text')} {t('item_category')}</Link>
+            <Link
+              to={selectedContainer ? `/container/${selectedContainer}/item` : "#"}
+              className={`nav-button ${!selectedContainer ? "disabled" : ""}`}
+              onClick={(e) => {
+                if (!selectedContainer) e.preventDefault(); // prevent navigation if no container
+              }}
+            >
+              {t('add_text')} {t('item_text')}
+            </Link>
+            <Link to="/category/add" className="nav-button">{t('categories_text')}</Link>
+            <Link to="/container/add" className="nav-button">{t('containers_text')}</Link>
         </div>
       </div>
 
@@ -187,7 +235,25 @@ const DashboardPage = () => {
 
       <div className="filter-bar">
         <div className="filter-group">
-          <label htmlFor="categoryFilter">{t('category_text')}:</label>
+          <label htmlFor="categoryFilter">{t('container_text')}</label>
+          <select
+            id="containerFilter"
+            value={selectedContainer || ""}
+            onChange={(e) => setSelectedContainer(e.target.value)}
+          >
+            <option value="" disabled>
+              {t('container_selection_text')}
+            </option>
+            {containers.map((container) => (
+              <option key={container.id} value={container.id}>
+                {container.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="categoryFilter">{t('category_text')}</label>
           <select
             id="categoryFilter"
             value={selectedCategory}
@@ -204,7 +270,7 @@ const DashboardPage = () => {
         </div>
 
         <div className="search-group">
-          <label htmlFor="categoryFilter">{t('search_text')}:</label>
+          <label htmlFor="categoryFilter">{t('search_text')}</label>
           <input
             type="text"
             placeholder={t('search_bar_text')}
@@ -249,13 +315,13 @@ const DashboardPage = () => {
                     >
                       {/* Actions column (update/delete) */}
                       <td className="actions-button" style={{ width: "30px" }}>
-                        <Link to={`/item/update/${item._id}`} className="nav-button nav-button-small">O</Link>
+                        <Link to={`/container/${item.container_id}/item/update/${item._id}`} className="nav-button nav-button-small">O</Link>
                       </td>
                       <td className="actions-button" style={{ width: "30px" }}>
                         <button onClick={() => handleDelete(item._id)} className="delete-button">X</button>
                       </td>
                       {/* All other columns */}
-                      <td>{item.name}</td>
+                      <td><bold>{item.name}</bold></td>
                       <td>{item.category}</td>
                       <td>{item.value}{t('currency')}</td>
                       <td>{item.date_added?.slice(0, 10)}</td>

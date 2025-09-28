@@ -12,6 +12,8 @@
   
   "add_text": "ADD",
   "delete_text": "DEL",
+  "containers_text": "CONTAINERS",
+  "categories_text": "CATEGORIES",
 
   "add_new_item_text": "ADD ITEM",
   "edit_item_text": "EDIT ITEM",
@@ -51,9 +53,10 @@
   "action-update": "MOD",
   "action-delete": "DEL",
   "total_value": "Total Value",
-  "search_text": "Search",
+  "search_text": "SEARCH",
   "selected_category_all": "---",
   "search_bar_text": "Search items...",
+  "container_selection_text": "---",
 
   "login_text": "LOGIN",
   "username": "Username",
@@ -61,5 +64,9 @@
 
   "category_head_text": "MANAGE CATEGORIES",
   "category_text": "CATEGORY",
-  "category_name": "NAME"
+  "category_name": "NAME",
+
+  "container_head_text": "MANAGE CONTAINERS",
+  "container_text": "CONTAINER",
+  "container_name": "NAME"
 }

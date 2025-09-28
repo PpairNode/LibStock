@@ -17,19 +17,6 @@ const Layout = ({ children }) => {
     localStorage.setItem('language-chosen', lng);
   };
 
-  useEffect(() => {
-    const fetchUsername = async () => {
-      try {
-        const response = await axios.get("/user");
-        setUsername(response.data.username || null);
-      } catch (error) {
-        setUsername(null);
-      }
-    };
-
-    fetchUsername();
-  }, []);
-
   return (
     <>
       <header className="App-nav">

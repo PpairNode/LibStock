@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axiosConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import "./AddItemPage.css";
 import "./DashboardPage.css";
@@ -12,6 +12,7 @@ const AddItemPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const today = new Date().toISOString().split("T")[0];
+  const { containerId } = useParams();
   const [categories, setCategories] = useState([]);
   const initialFormData = {
     owner: "",
@@ -30,23 +31,24 @@ const AddItemPage = () => {
     number: 1,
     edition: "",
   };
-
+  
   const [formData, setFormData] = useState(initialFormData);
-
+  
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [uploading, setUploading] = useState(false);
-
+  const [container, setContainer] = useState(null);
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  
   // Handle image selection and immediate upload
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
+    
     setUploading(true);
     setError(null);
 
@@ -86,7 +88,7 @@ const AddItemPage = () => {
     };
 
     try {
-      await axios.post("/item/add", itemToSend);
+      await axios.post(`/container/${containerId}/item/add`, itemToSend);
       setSuccess("Item added successfully.");
       setFormData({
       ...initialFormData,
@@ -132,9 +134,22 @@ const AddItemPage = () => {
     fetchCategories();
   }, [navigate]);
 
+  useEffect(() => {
+    const fetchContainer = async () => {
+      try {
+        const res = await axios.get(`/container/${containerId}`);
+        setContainer(res.data);
+      } catch (err) {
+        console.error("Error fetching container:", err.message);
+      }
+    };
+    fetchContainer();
+  }, [containerId]);
+
+
   return (
     <div className="container">
-      <h2>{t('add_new_item_text')}</h2>
+      <h2>{t('add_new_item_text')} to container: {container?.name || containerId}</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
 
@@ -152,7 +167,7 @@ const AddItemPage = () => {
 
           <div className="form-row">
               <label htmlFor="serie">{t('item_serie')}</label>
-              <input id="serie" name="serie" value={formData.serie} onChange={handleChange} required />
+              <input id="serie" name="serie" value={formData.serie} onChange={handleChange} />
           </div>
 
           <div className="form-row">
@@ -167,7 +182,7 @@ const AddItemPage = () => {
 
           <div className="form-row">
               <label htmlFor="date_created">{t('item_date_created')}*</label>
-              <input id="date_created" name="date_created" type="date" value={formData.item_date} onChange={handleChange} />
+              <input id="date_created" name="date_created" type="date" value={formData.date_created} onChange={handleChange} />
           </div>
 
           <div className="form-row">

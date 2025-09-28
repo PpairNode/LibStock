@@ -214,7 +214,8 @@
 }
 
 .filter-group select,
-.search-group input {
+.search-group input,
+.container-group select {
   padding: 8px 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -224,7 +225,8 @@
 }
 
 .filter-group select:focus,
-.search-group input:focus {
+.search-group input:focus
+.container-group select:focus {
   border-color: #007bff;
   outline: none;
   background-color: #fff;
@@ -235,7 +237,7 @@
   display: flex;
   flex-direction: column;
   font-weight: 600;
-  color: #33aa33;
+  color: #61dafb;
   font-size: 0.95rem;
   max-width: 200px;
 }

@@ -13,6 +13,7 @@ import DashboardPage from "./pages/DashboardPage";
 import AddItemPage from "./pages/AddItemPage";
 import EditItemPage from "./pages/EditItemPage";
 import CategoryPage from "./pages/CategoryPage";
+import ContainerPage from "./pages/ContainerPage";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -42,9 +43,10 @@ const App = () => {
           <Route path="/" element={<PrivateRoute><Outlet /></PrivateRoute>}>
             <Route path="/logout" element={<LogoutPage setIsAuthenticated={setIsAuthenticated} />} />
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/item/add" element={<AddItemPage />} />
-            <Route path="/item/update/:id" element={<EditItemPage />} />
+            <Route path="/container/:containerId/item" element={<AddItemPage />} />
+            <Route path="/container/:containerId/item/update/:id" element={<EditItemPage />} />
             <Route path="/category/add" element={<CategoryPage />} />
+            <Route path="/container/add" element={<ContainerPage />} />
           </Route>
 
           {/* Fallback */}

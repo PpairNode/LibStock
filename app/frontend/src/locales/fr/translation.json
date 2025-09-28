@@ -12,6 +12,8 @@
 
   "add_text": "AJT",
   "delete_text": "SUP",
+  "containers_text": "CAISSONS",
+  "categories_text": "CATEGORIES",
 
   "add_new_item_text": "AJOUT OBJET",
   "edit_item_text": "EDITION OBJET",
@@ -51,9 +53,10 @@
   "action-update": "MOD",
   "action-delete": "SUP",
   "total_value": "Valeur Totale",
-  "search_text": "Chercher",
+  "search_text": "CHERCHER",
   "selected_category_all": "---",
   "search_bar_text": "Rechercher/filtrer...",
+  "container_selection_text": "---",
 
   "login_text": "CONNEXION",
   "username": "Identifiant",
@@ -61,5 +64,9 @@
 
   "category_head_text": "GESTION DES CATEGORIES",
   "category_text": "CATEGORIE",
-  "category_name": "NOM"
+  "category_name": "NOM",
+
+  "container_head_text": "GESTION DES CAISSONS",
+  "container_text": "CAISSON",
+  "container_name": "NOM"
 }
