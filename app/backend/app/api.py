@@ -303,17 +303,12 @@ def upload_image():
     return jsonify({"image_path": full_path}), 200
 
 
-@api_bp.route("/container/<container_id>/item/delete", methods=["DELETE"])
+@api_bp.route("/container/<container_id>/item/delete/<item_id>", methods=["DELETE"])
 @login_required
-def delete_item(container_id):
+def delete_item(container_id, item_id):
     container = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"})
-    
-    data = request.get_json()
-    item_id = data.get("id")
-    if not item_id:
-        return jsonify({"message": "Item ID is required"}), 400
     obj_id = ObjectId(str(item_id))
     item = db.items.find_one({"_id": obj_id})
     result = db.items.delete_one({"_id": obj_id})

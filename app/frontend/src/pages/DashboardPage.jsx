@@ -57,9 +57,7 @@ const DashboardPage = () => {
     // if (!window.confirm("Are you sure you want to delete this item?")) return;
 
     try {
-      await axios.delete(`/container/${selectedContainer}/item/delete`, {
-        data: { id: itemId },
-      });
+      await axios.delete(`/container/${selectedContainer}/item/delete/${itemId}`);
 
       // Remove item from local state
       setItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
