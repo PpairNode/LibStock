@@ -128,7 +128,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("/categories");
+        const response = await axios.get(`/container/${selectedContainer}/categories`);
         if (!Array.isArray(response.data)) {
           console.error("Expected an array but got:", response.data);
           navigate("/error", {
@@ -214,7 +214,7 @@ const DashboardPage = () => {
             >
               {t('add_text')} {t('item_text')}
             </Link>
-            <Link to="/category/add" className="nav-button">{t('categories_text')}</Link>
+            <Link to={`/container/${selectedContainer}/category`} className="nav-button">{t('categories_text')}</Link>
             <Link to="/container/add" className="nav-button">{t('containers_text')}</Link>
         </div>
       </div>

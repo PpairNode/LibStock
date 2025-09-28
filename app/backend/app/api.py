@@ -22,9 +22,17 @@ def get_current_user():
         "username": current_user.username
     })
 
-def check_ressource_auth():
-    # TODO: check current DB of user / maybe add max DB (20)?
-    pass
+
+# TODO: upgrade error handling
+def get_container_access(container_id: str, user_id):
+    container = db.containers.find_one({"_id": ObjectId(container_id)})
+    if not container:
+        return None
+    user_id = ObjectId(current_user.id)
+    if user_id != container["admin_id"] and user_id not in container["member_ids"]:
+        print(f"Unauthorized access detected from user ID: {user_id}!")
+        return None
+    return container
 
 
 @api_bp.route("/containers", methods=["GET"])
@@ -40,62 +48,62 @@ def list_containers():
     return jsonify(containers), 200
 
 
-@api_bp.route("/categories", methods=["GET"])
+@api_bp.route("/container/<container_id>/categories", methods=["GET"])
 @login_required
-def list_categories():
-    categories = list(db.categories.find({}))
+def list_categories(container_id):
+    container = get_container_access(container_id, current_user.id)
+    if not container:
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
+    
+    categories = list(db.categories.find({ "container_id": container["_id"] }))
     for cat in categories:
         cat["_id"] = str(cat["_id"])  # Convert ObjectId to string
+        cat["container_id"] = str(cat["container_id"])
     return jsonify(categories), 200
 
 
-@api_bp.route("/category/add", methods=["GET", "POST"])
+@api_bp.route("/container/<container_id>/category/add", methods=["POST"])
 @login_required
-def add_category():
-    if request.method == "GET":
-        template = {
-            "name": "",
-        }
-        return jsonify(template), 200
-    else:  # POST
-        data = request.get_json()
-        required_fields = ["name"]
-        if not all(field in data for field in required_fields):
-            return jsonify({"error": "Missing fields"}), 400
-        category_name = data["name"].strip().upper()
-        item = { "name": category_name }
-        try:
-            result = db.categories.insert_one(item)
-        except DuplicateKeyError:
-            return jsonify({ "error": "Category already exists" }), 409
-        return jsonify({ "message": "Category added", "id": str(result.inserted_id) }), 201
+def add_category(container_id):
+    container = get_container_access(container_id, current_user.id)
+    if not container:
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
+
+    data = request.get_json()
+    required_fields = ["name"]
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing fields"}), 400
+    category_name = data["name"].strip().upper()
+    category = {
+        "name": category_name,
+        "container_id": container["_id"]
+    }
+    try:
+        result = db.categories.insert_one(category)
+    except DuplicateKeyError:
+        return jsonify({ "error": "Category already exists" }), 409
+    return jsonify({ "message": "Category added", "id": str(result.inserted_id) }), 201
 
 
-@api_bp.route("/category/delete/<category_id>", methods=["DELETE"])
+@api_bp.route("/container/<container_id>/category/delete/<category_id>", methods=["DELETE"])
 @login_required
-def delete_category(category_id):
-    result = db.categories.delete_one({"_id": ObjectId(category_id)})
+def delete_category(container_id, category_id):
+    container = get_container_access(container_id, current_user.id)
+    if not container:
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
+    
+    result = db.categories.delete_one({ "container_id": ObjectId(container_id),  "_id": ObjectId(category_id)})
     if result.deleted_count == 1:
         return jsonify({"message": "Item deleted successfully"}), 200
     else:
         return jsonify({"message": "Item not found"}), 404
 
 
-@api_bp.route("/items", methods=["GET"])
-@login_required
-def list_items():
-    items = list(db.items.find({}))
-    for item in items:
-        item["_id"] = str(item["_id"])  # Convert ObjectId to string
-        item["date_added"] = item["date_added"].isoformat() if "date_added" in item else None
-    return jsonify(items), 200
-
-
 @api_bp.route("/containers/<container_id>/items", methods=["GET"])
 @login_required
 def list_items_for_container(container_id):
     try:
-        container = db.containers.find_one({"_id": ObjectId(container_id)})
+        container = db.containers.find_one({ "_id": ObjectId(container_id) })
         if not container:
             return jsonify({"error": "Container not found"}), 404
         # Check if user has access (is member or admin)
@@ -154,33 +162,18 @@ def add_container():
         return jsonify({ "message": "Container added", "id": str(result.inserted_id) }), 201
 
 
-# TODO: upgrade error handling
-def get_container_access(container_id: str, user_id):
-    container = db.containers.find_one({"_id": ObjectId(container_id)})
-    if not container:
-        return None
-    user_id = ObjectId(current_user.id)
-    print(f"CONT: {container}")
-    print(f"USER ID: {user_id}")
-    if user_id != container["admin_id"] and user_id not in container["member_ids"]:
-        print(f"Unauthorized access detected from user ID: {user_id}!")
-        return None
-    return container
 
 
-@api_bp.route("/container/delete", methods=["DELETE"])
+@api_bp.route("/container/delete/<container_id>", methods=["DELETE"])
 @login_required
-def delete_container():
-    data = request.get_json()
-    _id = data.get("id")
-    if not _id:
-        return jsonify({"message": "Container ID is required"}), 400
-    container = get_container_access(_id, current_user.id)
+def delete_container(container_id):
+    container = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
 
-    # Delete all items belonging to this container
+    # Delete all items and categories belonging to this container
     db.items.delete_many({"container_id": container["_id"]})
+    db.categories.delete_many({"container_id": container["_id"]})
     result = db.containers.delete_one({"_id": container["_id"]})
     if result.deleted_count == 1:
         return jsonify({"message": "Container deleted successfully"}), 200
@@ -193,7 +186,7 @@ def delete_container():
 def get_container(container_id):
     container = get_container_access(container_id, current_user.id)
     if not container:
-        return jsonify({"error": f"Unauthorized access to this container!"})
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
 
     # Convert ObjectIds to strings for JSON
     container["_id"] = str(container["_id"])
@@ -209,7 +202,7 @@ def get_container(container_id):
 def add_item(container_id):
     container = get_container_access(container_id, current_user.id)
     if not container:
-        return jsonify({"error": f"Unauthorized access to this container!"})
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
 
     if request.method == "GET":
         template = {
@@ -304,7 +297,7 @@ def upload_image():
 def delete_item(container_id, item_id):
     container = get_container_access(container_id, current_user.id)
     if not container:
-        return jsonify({"error": f"Unauthorized access to this container!"})
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
     obj_id = ObjectId(str(item_id))
     item = db.items.find_one({"_id": obj_id})
     result = db.items.delete_one({"_id": obj_id})
@@ -331,7 +324,7 @@ def delete_item(container_id, item_id):
 def get_item_by_id(container_id, item_id):
     container = get_container_access(container_id, current_user.id)
     if not container:
-        return jsonify({"error": f"Unauthorized access to this container!"})
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
     
     try:
         item = db.items.find_one({"container_id": ObjectId(container_id), "_id": ObjectId(item_id)})
@@ -351,7 +344,7 @@ def get_item_by_id(container_id, item_id):
 def update_item(container_id, id):
     container = get_container_access(container_id, current_user.id)
     if not container:
-        return jsonify({"error": f"Unauthorized access to this container!"})
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
 
     data = request.json
     # Validate fields here as needed

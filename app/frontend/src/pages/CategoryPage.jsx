@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axiosConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import "./DashboardPage.css";
 import "./AddItemPage.css";
 import "../components/Form.css";
 
 const AddCategoryPage = () => {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [categories, setCategories] = useState([]);
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+
+  const { containerId } = useParams();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,9 +22,9 @@ const AddCategoryPage = () => {
     setSuccess(null);
 
     try {
-      await axios.post("/category/add", { name });
+      await axios.post(`/container/${containerId}/category/add`, { name });
       setSuccess("Category added successfully.");
-      const res = await axios.get("/categories");
+      const res = await axios.get(`/container/${containerId}/categories`);
       setCategories(res.data);
     } catch (err) {
       console.error("Error submitting category:", err.message);
@@ -32,7 +34,7 @@ const AddCategoryPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/category/delete/${id}`);
+      await axios.delete(`/container/${containerId}/category/delete/${id}`);
 
       // Remove item from local state
       setCategories((prevItems) => prevItems.filter((cat) => cat._id !== id));
@@ -45,7 +47,7 @@ const AddCategoryPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/categories");
+        const res = await axios.get(`/container/${containerId}/categories`);
         setCategories(res.data);
       } catch (err) {
         console.error("Failed to fetch user info", err.message);

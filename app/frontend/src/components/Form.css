@@ -1,10 +1,12 @@
 .form-group {
-  display: flex;
-  gap: 0.3rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two equal columns */
+  gap: 1rem 2rem; /* row gap | column gap */
   background-color: #444;
   padding: 10px;
   border-radius: 12px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group label {
@@ -29,16 +31,18 @@
 }
 
 .form-button {
+  grid-column: span 2;   /* span across both columns */
+  width: 100%;           /* stretch full width */
   font-size: 14px;
-  padding: 10px;
+  padding: 12px;
   background-color: #33aa33;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
   text-decoration: none;
-  display: inline-block;
+  justify-self: stretch; /* ensure grid doesn’t shrink it */
 }
 
 .form-button:hover {

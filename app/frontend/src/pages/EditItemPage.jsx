@@ -13,6 +13,7 @@ const EditItemPage = () => {
   const today = new Date().toISOString().split("T")[0];
   
   const { containerId, id: itemId } = useParams();
+  const [container, setContainer] = useState(null);
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -66,7 +67,7 @@ const EditItemPage = () => {
 
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/categories");
+        const res = await axios.get(`/container/${containerId}/categories`);
         setCategories(res.data);
       } catch (err) {
         console.error("Error fetching categories:", err.message);
@@ -77,6 +78,18 @@ const EditItemPage = () => {
     fetchItem();
     fetchCategories();
   }, [id, navigate, today]);
+
+  useEffect(() => {
+    const fetchContainer = async () => {
+      try {
+        const res = await axios.get(`/container/${containerId}`);
+        setContainer(res.data);
+      } catch (err) {
+        console.error("Error fetching container:", err.message);
+      }
+    };
+    fetchContainer();
+  }, [containerId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -136,7 +149,7 @@ const EditItemPage = () => {
     <div className="container">
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <h2>{t('edit_item_text')}</h2>
+      <h2>{t('edit_item_text')} <span style={{ color: "grey" }}>({t('containers_text')}: {container?.name || containerId})</span></h2>
       <form onSubmit={handleSubmit} className="item-form-grid">
         <div className="form-group">
           <div className="form-row">

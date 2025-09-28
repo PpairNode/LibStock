@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axiosConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import "./DashboardPage.css";
 import "./AddItemPage.css";
@@ -33,9 +33,7 @@ const AddContainerPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      const res = await axios.delete("/container/delete", {
-        data: { id },
-      });
+      const res = await axios.delete(`/container/delete/${id}`)
 
       // Remove item from local state
       setContainers((prevItems) => prevItems.filter((container) => container._id !== id));

@@ -122,8 +122,7 @@ const AddItemPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/categories");
-        console.log("Categories:", res.data)
+        const res = await axios.get(`/container/${containerId}/categories`);
         setCategories(res.data);
       } catch (err) {
         console.error("Failed to fetch user info", err.message);
@@ -152,7 +151,7 @@ const AddItemPage = () => {
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
 
-      <h2>{t('add_new_item_text')} to container: {container?.name || containerId}</h2>
+      <h2>{t('add_new_item_text')} <span style={{ color: "grey" }}>({t('containers_text')}: {container?.name || containerId})</span></h2>
       <form onSubmit={handleSubmit} className="item-form-grid">
         <div className="form-group">
           <div className="form-row">

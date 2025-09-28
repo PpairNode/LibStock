@@ -45,8 +45,8 @@ const App = () => {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/container/:containerId/item" element={<AddItemPage />} />
             <Route path="/container/:containerId/item/update/:id" element={<EditItemPage />} />
-            <Route path="/category/add" element={<CategoryPage />} />
-            <Route path="/container/add" element={<ContainerPage />} />
+            <Route path="/container/:containerId/category" element={<CategoryPage />} />
+            <Route path="/container" element={<ContainerPage />} />
           </Route>
 
           {/* Fallback */}
