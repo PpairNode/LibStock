@@ -336,7 +336,7 @@ const DashboardPage = () => {
                       {/* All other columns */}
                       <td><b>{item.name}</b></td>
                       <td>{item.category}</td>
-                      <td>{item.value}{t('currency')}</td>
+                      <td><b>{item.value}</b>{t('currency')}</td>
                       <td>{item.date_added?.slice(0, 10)}</td>
                       {optionalColumns.map(
                       (col) =>
