@@ -334,7 +334,7 @@ const DashboardPage = () => {
                         <button onClick={() => handleDelete(item._id)} className="delete-button">X</button>
                       </td>
                       {/* All other columns */}
-                      <td><bold>{item.name}</bold></td>
+                      <td><b>{item.name}</b></td>
                       <td>{item.category}</td>
                       <td>{item.value}{t('currency')}</td>
                       <td>{item.date_added?.slice(0, 10)}</td>
