@@ -26,6 +26,7 @@ const AddCategoryPage = () => {
       setSuccess("Category added successfully.");
       const res = await axios.get(`/container/${containerId}/categories`);
       setCategories(res.data);
+      setName("")
     } catch (err) {
       console.error("Error submitting category:", err.message);
       setError(`Failed to add category: ${err.response?.data?.error || err.message}`);
