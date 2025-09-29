@@ -92,6 +92,8 @@ def delete_category(container_id, category_id):
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
     
+    # Delete all items which are contained in this category
+    db.items.delete_many({"container_id": container["_id"], "category_id": ObjectId(category_id)})
     result = db.categories.delete_one({ "container_id": ObjectId(container_id),  "_id": ObjectId(category_id)})
     if result.deleted_count == 1:
         return jsonify({"message": "Item deleted successfully"}), 200
@@ -118,6 +120,10 @@ def list_items_for_container(container_id):
             item["container_id"] = str(item["container_id"])
             if "date_added" in item and item["date_added"]:
                 item["date_added"] = item["date_added"].isoformat()
+            # Get category name
+            category = db.categories.find_one({ "_id": item["category_id"]})
+            item["category_id"] = ""
+            item["category"] = category["name"]
         return jsonify(items), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -238,7 +244,7 @@ def add_item(container_id):
             "creator": current_user.username,
             "tags": data["tags"],
             "image_path": data["image_path"] or "not-image.png",
-            "category": data["category"] or "",
+            "category_id": ObjectId(data["category"]),
             "comment": data["comment"] or "",
             "condition": data["condition"] or "",
             "number": data["number"] or 0,

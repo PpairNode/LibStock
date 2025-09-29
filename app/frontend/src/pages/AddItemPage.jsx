@@ -210,7 +210,7 @@ const AddItemPage = () => {
               >
                   <option value="">-- {t('item_category_select')} --</option>
                   {categories.map((cat, idx) => (
-                  <option key={idx} value={cat.name}>
+                  <option key={idx} value={cat._id}>
                       {cat.name}
                   </option>
                   ))}
