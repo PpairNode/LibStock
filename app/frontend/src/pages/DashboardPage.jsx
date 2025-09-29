@@ -126,6 +126,11 @@ const DashboardPage = () => {
   }, [selectedContainer, navigate]);
 
   useEffect(() => {
+    if (!selectedContainer) return;
+
+    // Keep selected one on refresh
+    localStorage.setItem("selectedContainer", selectedContainer);
+
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`/container/${selectedContainer}/categories`);
@@ -142,8 +147,10 @@ const DashboardPage = () => {
         const categoryNames = response.data.map(cat => cat.name);
         setCategories([t('selected_category_all'), ...categoryNames]);
       } catch (error) {
-        console.error("Error fetching categories:", error.message);
-        navigate("/error", { state: { message: `Error fetching categories: ${error.message}` }});
+        /* TODO: Handle how to check if selectedContainer is still present, if not reset it */
+        setSelectedContainer(null)
+        // console.error("Error fetching categories:", error.message);
+        // navigate("/error", { state: { message: `Error fetching categories: ${error.message}` }});
       }
     };
 
@@ -214,8 +221,16 @@ const DashboardPage = () => {
             >
               {t('add_text')} {t('item_text')}
             </Link>
-            <Link to={`/container/${selectedContainer}/category`} className="nav-button">{t('categories_text')}</Link>
-            <Link to="/container/add" className="nav-button">{t('containers_text')}</Link>
+            <Link
+              to={`/container/${selectedContainer}/category`}
+              className={`nav-button ${!selectedContainer ? "disabled" : ""}`}
+              onClick={(e) => {
+                if (!selectedContainer) e.preventDefault(); // prevent navigation if no container
+              }}
+            >
+              {t('categories_text')}
+            </Link>
+            <Link to="/container/" className="nav-button">{t('containers_text')}</Link>
         </div>
       </div>
 

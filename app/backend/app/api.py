@@ -123,43 +123,36 @@ def list_items_for_container(container_id):
         return jsonify({"error": str(e)}), 500
 
 
-@api_bp.route("/container/add", methods=["GET", "POST"])
+@api_bp.route("/container/add", methods=["POST"])
 @login_required
 def add_container():
-    if request.method == "GET":
-        template = {
-            "name": "",
-        }
-        return jsonify(template), 200
+    data = request.get_json()
+    required_fields = ["name"]
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing fields"}), 400
+    container_name = data["name"].strip()
+    user_id = ObjectId(current_user.id)
 
-    else:  # POST
-        data = request.get_json()
-        required_fields = ["name"]
-        if not all(field in data for field in required_fields):
-            return jsonify({"error": "Missing fields"}), 400
-        container_name = data["name"].strip()
-        user_id = ObjectId(current_user.id)
+    # Enforce unique container name per admin
+    existing = db.containers.find_one({
+        "name": container_name,
+        "admin_id": user_id
+    })
+    if existing:
+        return jsonify({"error": "Container already exists"}), 409
 
-        # Enforce unique container name per admin
-        existing = db.containers.find_one({
-            "name": container_name,
-            "admin_id": user_id
-        })
-        if existing:
-            return jsonify({"error": "Container already exists"}), 409
+    container = {
+        "name": container_name,
+        "admin_id": user_id,
+        "member_ids": [user_id],
+    }
 
-        container = {
-            "name": container_name,
-            "admin_id": user_id,
-            "member_ids": [user_id],
-        }
+    try:
+        result = db.containers.insert_one(container)
+    except DuplicateKeyError:
+        return jsonify({"error": "Container already exists"}), 409
 
-        try:
-            result = db.containers.insert_one(container)
-        except DuplicateKeyError:
-            return jsonify({"error": "Container already exists"}), 409
-
-        return jsonify({ "message": "Container added", "id": str(result.inserted_id) }), 201
+    return jsonify({ "message": "Container added", "id": str(result.inserted_id) }), 201
 
 
 
