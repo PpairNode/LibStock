@@ -68,14 +68,17 @@ const AddContainerPage = () => {
         <h2>{t('container_head_text')}</h2><br/>
         <form onSubmit={handleSubmit} className="item-form-grid">
           <div className="form-group">
-            <label htmlFor="name">{t('container_name')}*</label>
-            <input
-              id="name"
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+            <div className="form-row">
+              <label htmlFor="name">{t('container_name')}*</label>
+              <input
+                id="name"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            
             <button type="submit" className="nav-button">{t('add_text')}</button>
           </div>
         </form>
