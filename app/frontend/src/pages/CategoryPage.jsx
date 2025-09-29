@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "../api/axiosConfig";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,10 @@ const AddCategoryPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const inputRef = useRef(null);
+
 
   const { containerId } = useParams();
 
@@ -45,6 +49,26 @@ const AddCategoryPage = () => {
     }
   };
 
+  const handleUpdate = async (id) => {
+    try {
+      await axios.post(`/container/${containerId}/category/update/${id}`, {
+        name: editName,
+      });
+
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat._id === id ? { ...cat, name: editName } : cat
+        )
+      );
+
+      setEditingId(null); // exit edit mode
+      setEditName("");
+    } catch (error) {
+      console.error("Error updating category:", error.message);
+      setError("Failed to update category.");
+    }
+  };
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -58,6 +82,13 @@ const AddCategoryPage = () => {
 
     fetchCategories();
   }, [navigate]);
+
+  useEffect(() => {
+    if (editingId && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editingId]);
+
 
   return (
     <div className="container">
@@ -78,7 +109,7 @@ const AddCategoryPage = () => {
                 required
               />
             </div>
-            
+
             <button type="submit" className="nav-button">{t('add_text')}</button>
           </div>
         </form>
@@ -89,6 +120,7 @@ const AddCategoryPage = () => {
           <thead>
               <tr style={{ backgroundColor: "#f0f4f8" }}>
               <th>{t('delete_text')}</th>
+              <th>{t('update_text')}</th>
               <th>{t('category_text')}</th>
               </tr>
           </thead>
@@ -100,17 +132,50 @@ const AddCategoryPage = () => {
               >
                   {/* DELETE button */}
                   <td style={{ width: "30px" }}>
-                  <button
-                      onClick={(e) => {
-                      e.stopPropagation(); // prevent row click
-                      handleDelete(cat._id);
-                      }}
-                      className="delete-button"
-                  >
-                    X
-                  </button>
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation(); // prevent row click
+                        handleDelete(cat._id);
+                        }}
+                        className="delete-button"
+                    >
+                      X
+                    </button>
                   </td>
-                  <td>{cat.name}</td>
+
+
+                  {/* UPDATE BUTTON */}
+                  <td>
+                    {editingId === cat._id ? (
+                      <button className="nav-button nav-button-small" onClick={() => handleUpdate(cat._id)}>Save</button>
+                    ) : (
+                      <button
+                        className="nav-button nav-button-small"
+                        onClick={() => {
+                          setEditingId(cat._id);
+                          setEditName(cat.name);
+                        }}
+                      >
+                        Update
+                      </button>
+                    )}
+                  </td>
+                  
+                  {/* NAME CELL */}
+                  <td>
+                    {editingId === cat._id ? (
+                      <input
+                        ref={inputRef}
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleUpdate(cat._id);
+                        }}
+                      />
+                    ) : (
+                      cat.name
+                    )}
+                  </td>
               </tr>
               ))}
           </tbody>

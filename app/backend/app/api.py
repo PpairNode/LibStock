@@ -85,6 +85,29 @@ def add_category(container_id):
     return jsonify({ "message": "Category added", "id": str(result.inserted_id) }), 201
 
 
+@api_bp.route("/container/<container_id>/category/update/<category_id>", methods=["POST"])
+@login_required
+def update_category(container_id, category_id):
+    container = get_container_access(container_id, current_user.id)
+    if not container:
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
+
+    data = request.get_json()
+
+    required_fields = ["name"]
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing fields"}), 400
+    
+    result = db.categories.update_one(
+        {"_id": ObjectId(category_id), "container_id": ObjectId(container_id)},
+        {"$set": {"name": data["name"]}}
+    )
+    if result.matched_count == 0:
+        return jsonify({"error": "Category not found"}), 404
+    
+    return jsonify({"message": "Category updated successfully"}), 201
+
+
 @api_bp.route("/container/<container_id>/category/delete/<category_id>", methods=["DELETE"])
 @login_required
 def delete_category(container_id, category_id):
@@ -159,8 +182,6 @@ def add_container():
         return jsonify({"error": "Container already exists"}), 409
 
     return jsonify({ "message": "Container added", "id": str(result.inserted_id) }), 201
-
-
 
 
 @api_bp.route("/container/delete/<container_id>", methods=["DELETE"])
