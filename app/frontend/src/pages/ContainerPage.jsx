@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "../api/axiosConfig";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
@@ -7,12 +7,15 @@ import "./AddItemPage.css";
 import "../components/Form.css";
 
 const AddContainerPage = () => {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [containers, setContainers] = useState([]);
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const inputRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,6 +48,26 @@ const AddContainerPage = () => {
     }
   };
 
+  const handleUpdate = async (id) => {
+    try {
+      await axios.post(`/container/update/${id}`, {
+        name: editName,
+      });
+
+      setContainers((prev) =>
+        prev.map((container) =>
+          container._id === id ? { ...container, name: editName } : container
+        )
+      );
+
+      setEditingId(null); // exit edit mode
+      setEditName("");
+    } catch (error) {
+      console.error("Error updating container:", error.message);
+      setError("Failed to update container.");
+    }
+  };
+
   useEffect(() => {
     const fetchContainers = async () => {
       try {
@@ -58,6 +81,13 @@ const AddContainerPage = () => {
 
     fetchContainers();
   }, [navigate]);
+
+  useEffect(() => {
+    if (editingId && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editingId]);
+
 
   return (
     <div className="container">
@@ -89,6 +119,7 @@ const AddContainerPage = () => {
           <thead>
               <tr style={{ backgroundColor: "#f0f4f8" }}>
               <th>{t('delete_text')}</th>
+              <th>{t('update_text')}</th>
               <th>{t('container_text')}</th>
               </tr>
           </thead>
@@ -111,7 +142,39 @@ const AddContainerPage = () => {
                     X
                     </button>
                 </td>
-                <td>{container.name}</td>
+
+                {/* UPDATE BUTTON */}
+                <td>
+                  {editingId === container._id ? (
+                    <button className="nav-button nav-button-small" onClick={() => handleUpdate(container._id)}>Save</button>
+                  ) : (
+                    <button
+                      className="nav-button nav-button-small"
+                      onClick={() => {
+                        setEditingId(container._id);
+                        setEditName(container.name);
+                      }}
+                    >
+                      Update
+                    </button>
+                  )}
+                </td>
+                
+                {/* NAME CELL */}
+                <td>
+                  {editingId === container._id ? (
+                    <input
+                      ref={inputRef}
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleUpdate(container._id);
+                      }}
+                    />
+                  ) : (
+                    container.name
+                  )}
+                </td>
               </tr>
               ))}
           </tbody>

@@ -199,6 +199,29 @@ def delete_container(container_id):
         return jsonify({"message": "Container deleted successfully"}), 200
     else:
         return jsonify({"error": "Container not found"}), 404
+    
+
+@api_bp.route("/container/update/<container_id>", methods=["POST"])
+@login_required
+def update_container(container_id):
+    container = get_container_access(container_id, current_user.id)
+    if not container:
+        return jsonify({"error": f"Unauthorized access to this container!"}), 403
+
+    data = request.get_json()
+
+    required_fields = ["name"]
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing fields"}), 400
+    
+    result = db.containers.update_one(
+        {"_id": ObjectId(container_id)},
+        {"$set": {"name": data["name"]}}
+    )
+    if result.matched_count == 0:
+        return jsonify({"error": "Container not found"}), 404
+    
+    return jsonify({"message": "Container updated successfully"}), 201
 
 
 @api_bp.route("/container/<container_id>", methods=["GET"])
