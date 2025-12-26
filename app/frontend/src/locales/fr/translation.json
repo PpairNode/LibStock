@@ -72,9 +72,9 @@
   "container_name": "NOM",
 
   "confirm_delete_container_title": "Supprimer le caisson ?",
-  "confirm_delete_container_message": "Êtes-vous sûr de vouloir supprimer ce caisson ? Tous les objets seront supprimés. Cette action est irréversible.",
+  "confirm_delete_container_message": "Êtes-vous sûr de vouloir supprimer ce caisson ? Tous les objets et catégories de ce caisson seront supprimés. Cette action est irréversible.",
   "confirm_delete_category_title": "Supprimer la catégorie ?",
-  "confirm_delete_category_message": "Êtes-vous sûr de vouloir supprimer cette catégorie ? Cette action est irréversible.",
+  "confirm_delete_category_message": "Êtes-vous sûr de vouloir supprimer cette catégorie ? Tous les objets liés à cette catégorie seront supprimés. Cette action est irréversible.",
   "confirm_yes": "Supprimer",
   "confirm_no": "Annuler"
 }
