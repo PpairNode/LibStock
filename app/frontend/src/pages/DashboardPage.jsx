@@ -145,7 +145,11 @@ const DashboardPage = () => {
         }
 
         const categoryNames = response.data.map(cat => cat.name);
-        setCategories([t('selected_category_all'), ...categoryNames]);
+        if (categoryNames.length > 0) {
+          setCategories([t('selected_category_all'), ...categoryNames]);
+        } else {
+          setCategories([]);
+        }
       } catch (error) {
         /* TODO: Handle how to check if selectedContainer is still present, if not reset it */
         setSelectedContainer(null)
@@ -213,10 +217,12 @@ const DashboardPage = () => {
         <h2>{t('dashboard')}</h2>
         <div className="button-group">
             <Link
-              to={selectedContainer ? `/container/${selectedContainer}/item` : "#"}
-              className={`nav-button ${!selectedContainer ? "disabled" : ""}`}
+              to={selectedContainer && categories.length > 0 ? `/container/${selectedContainer}/item` : "#"}
+              className={`nav-button ${!selectedContainer || categories.length === 0 ? "disabled" : ""}`}
               onClick={(e) => {
-                if (!selectedContainer) e.preventDefault(); // prevent navigation if no container
+                if (!selectedContainer || categories.length === 0) {
+                  e.preventDefault(); // prevent navigation if no container or no categories
+                }
               }}
             >
               {t('add_text')} {t('item_text')}

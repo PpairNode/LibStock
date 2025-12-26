@@ -12,6 +12,7 @@
   
   "add_text": "ADD",
   "delete_text": "DEL",
+  "update_text": "MOD",
   "containers_text": "CONTAINERS",
   "categories_text": "CATEGORIES",
 
