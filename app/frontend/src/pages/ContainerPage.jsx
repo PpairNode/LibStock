@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import "./DashboardPage.css";
 import "./AddItemPage.css";
 import "../components/Form.css";
+import ConfirmDialog from '../utils/ConfirmationDialog';
 
 const AddContainerPage = () => {
   const { t, i18n } = useTranslation();
@@ -66,6 +67,22 @@ const AddContainerPage = () => {
       console.error("Error updating container:", error.message);
       setError("Failed to update container.");
     }
+  };
+
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, type: null });
+
+  const openDeleteConfirm = (id, type, e) => {
+    e.stopPropagation();
+    setDeleteConfirm({ show: true, id, type });
+  };
+
+  const confirmDelete = () => {
+    handleDelete(deleteConfirm.id);
+    setDeleteConfirm({ show: false, id: null, type: null });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false, id: null, type: null });
   };
 
   useEffect(() => {
@@ -130,17 +147,13 @@ const AddContainerPage = () => {
                   style={{ cursor: "pointer", backgroundColor: "white" }}
               >
                 {/* DELETE button */}
-                {/* TODO: add a popup to be sure user wants to delete all objects */}
                 <td style={{ width: "30px" }}>
-                    <button
-                        onClick={(e) => {
-                        e.stopPropagation(); // prevent row click
-                        handleDelete(container._id);
-                        }}
-                        className="delete-button"
-                    >
+                  <button
+                    onClick={(e) => openDeleteConfirm(container._id, 'container', e)}
+                    className="delete-button"
+                  >
                     X
-                    </button>
+                  </button>
                 </td>
 
                 {/* UPDATE BUTTON */}
@@ -180,6 +193,16 @@ const AddContainerPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Confirmation POPUP */}
+      <ConfirmDialog
+        show={deleteConfirm.show}
+        title={t('confirm_delete_container_title')}
+        message={t('confirm_delete_container_message')}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+
     </div>
   );
 };

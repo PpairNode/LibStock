@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import "./DashboardPage.css";
 import "./AddItemPage.css";
 import "../components/Form.css";
+import ConfirmDialog from '../utils/ConfirmationDialog';
+
 
 const AddCategoryPage = () => {
   const { t, i18n } = useTranslation();
@@ -67,6 +69,22 @@ const AddCategoryPage = () => {
       console.error("Error updating category:", error.message);
       setError("Failed to update category.");
     }
+  };
+
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, type: null });
+  
+  const openDeleteConfirm = (id, type, e) => {
+    e.stopPropagation();
+    setDeleteConfirm({ show: true, id, type });
+  };
+
+  const confirmDelete = () => {
+    handleDelete(deleteConfirm.id);
+    setDeleteConfirm({ show: false, id: null, type: null });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false, id: null, type: null });
   };
 
   useEffect(() => {
@@ -133,16 +151,12 @@ const AddCategoryPage = () => {
                   {/* DELETE button */}
                   <td style={{ width: "30px" }}>
                     <button
-                        onClick={(e) => {
-                        e.stopPropagation(); // prevent row click
-                        handleDelete(cat._id);
-                        }}
-                        className="delete-button"
+                      onClick={(e) => openDeleteConfirm(cat._id, 'category', e)}
+                      className="delete-button"
                     >
                       X
                     </button>
                   </td>
-
 
                   {/* UPDATE BUTTON */}
                   <td>
@@ -181,6 +195,16 @@ const AddCategoryPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Confirmation POPUP */}
+      <ConfirmDialog
+        show={deleteConfirm.show}
+        title={t('confirm_delete_category_title')}
+        message={t('confirm_delete_category_message')}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+
     </div>
   );
 };
