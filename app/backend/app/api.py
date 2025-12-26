@@ -360,26 +360,28 @@ def delete_item(container_id, item_id):
         return jsonify({"message": "Item deleted successfully"}), 200
     else:
         return jsonify({"message": "Item not found"}), 404
-    
 
+    
 @api_bp.route("/container/<container_id>/item/update/<item_id>", methods=["GET"])
 @login_required
 def get_item_by_id(container_id, item_id):
     container = get_container_access(container_id, current_user.id)
     if not container:
-        return jsonify({"error": f"Unauthorized access to this container!"}), 403
+        print("Container access denied")
+        return jsonify({"error": "Unauthorized access to this container!"}), 403
     
     try:
-        item = db.items.find_one({"container_id": ObjectId(container_id), "_id": ObjectId(item_id)})
+        item = db.items.find_one({"container_id": ObjectId(container_id), "_id": ObjectId(item_id)})        
         if not item:
+            print("Item not found in database")
             return jsonify({"message": "Item not found"}), 404
 
         item["_id"] = str(item["_id"])
         item["container_id"] = str(item["container_id"])
+        item["category_id"] = str(item["category_id"])
         return jsonify(item), 200
     except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"message": "Failed to fetch item"}), 500
+        return jsonify({"message": f"Failed to fetch item"}), 500
 
 
 @api_bp.route("/container/<container_id>/item/update/<id>", methods=["POST"])
@@ -400,7 +402,7 @@ def update_item(container_id, id):
         "location": data.get("location"),
         "tags": data.get("tags"),
         "creator": data.get("creator"),
-        "category": data.get("category"),
+        "category_id": ObjectId(data.get("category")),
         "comment": data.get("comment"),
         "condition": data.get("condition"),
         "owner": data.get("owner"),

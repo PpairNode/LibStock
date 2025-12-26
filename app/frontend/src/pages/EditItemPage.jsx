@@ -7,16 +7,16 @@ import { useTranslation } from 'react-i18next';
 
 
 const EditItemPage = () => {
-  const { id } = useParams();
+  const { containerId, id: itemId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const today = new Date().toISOString().split("T")[0];
-  
-  const { containerId, id: itemId } = useParams();
+
   const [container, setContainer] = useState(null);
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
+    serie: "",
     description: "",
     value: 0,
     date_created: today,
@@ -33,9 +33,9 @@ const EditItemPage = () => {
     edition: "",
   });
   const [error, setError] = useState(null);
-  const [, setSuccess] = useState(null);
   const [uploading, setUploading] = useState(false);
 
+  // Fetch item data and categories on mount
   useEffect(() => {
     const fetchItem = async () => {
       try {
@@ -52,7 +52,8 @@ const EditItemPage = () => {
           creator: item.creator || "",
           tags: item.tags?.join(", ") || "",
           image: null,
-          category: item.category || "",
+          image_path: item.image_path || "",
+          category: item.category_id || "",
           comment: item.comment || "",
           condition: item.condition || "",
           owner: item.owner || "",
@@ -60,34 +61,51 @@ const EditItemPage = () => {
           edition: item.edition || "",
         });
       } catch (err) {
-        console.error("Error fetching item for update:", err.message);
-        navigate("/error");
+        console.error("Full error object:", err);
+        console.error("Error response:", err.response?.data);
+        console.error("Error status:", err.response?.status);
+        navigate("/error", { state: { message: `Error fetching item: ${err.response?.data?.message || err.message}` }});
+
+        // console.error("Error fetching item for update:", err.message);
+        // navigate("/error", { state: { message: `Error fetching item: ${err.message}` }});
       }
     };
 
     const fetchCategories = async () => {
       try {
         const res = await axios.get(`/container/${containerId}/categories`);
+        if (!Array.isArray(res.data)) {
+          console.error("Expected an array but got:", res.data);
+          setCategories([]);
+          return;
+        }
         setCategories(res.data);
       } catch (err) {
         console.error("Error fetching categories:", err.message);
-        navigate("/error");
+        setCategories([]);
       }
     };
 
-    fetchItem();
-    fetchCategories();
-  }, [id, navigate, today]);
+    if (containerId && itemId) {
+      fetchItem();
+      fetchCategories();
+    }
+  }, [containerId, itemId, navigate, today]);
 
+  // Fetch container metadata separately
   useEffect(() => {
+    if (!containerId) return;
+
     const fetchContainer = async () => {
       try {
         const res = await axios.get(`/container/${containerId}`);
         setContainer(res.data);
       } catch (err) {
         console.error("Error fetching container:", err.message);
+        // Don't navigate to error page, container metadata is optional
       }
     };
+
     fetchContainer();
   }, [containerId]);
 
@@ -117,11 +135,9 @@ const EditItemPage = () => {
         image: file,
         image_path: response.data.image_path,
       }));
-
-      setSuccess("Image uploaded successfully.");
     } catch (err) {
       console.error("Image upload failed:", err);
-      setError("Image upload failed.");
+      setError("Image upload failed. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -129,6 +145,7 @@ const EditItemPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
 
     const updatedItem = {
       ...formData,
@@ -137,11 +154,11 @@ const EditItemPage = () => {
     };
 
     try {
-      await axios.post(`/container/${containerId}/item/update/${id}`, updatedItem);
+      await axios.post(`/container/${containerId}/item/update/${itemId}`, updatedItem);
       navigate("/dashboard");
     } catch (err) {
       console.error("Update failed:", err.message);
-      setError("Failed to update item.");
+      setError("Failed to update item. Please try again.");
     }
   };
 
@@ -201,9 +218,11 @@ const EditItemPage = () => {
             <label htmlFor="category">{t('item_category')}*</label>
             <select id="category" name="category" value={formData.category} onChange={handleChange} required>
               <option value="">-- {t('item_category_select')} --</option>
-              {categories.map((cat, idx) => (
-                <option key={idx} value={cat.name}>{cat.name}</option>
-              ))}
+                {categories.map((cat, idx) => (
+                  <option key={idx} value={cat._id}>
+                      {cat.name}
+                  </option>
+                ))}
             </select>
           </div>
 
