@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import { getConditionLabel } from '../utils/TranslationHelper';
 import axios from "../api/axiosConfig";
 import "./DashboardPage.css";
 import getPublicImageUrl from "../utils/Media";
@@ -345,6 +346,8 @@ const DashboardPage = () => {
                               ? item[col.key]?.join(", ")
                               : col.key === "image_path"
                               ? <img src={getPublicImageUrl(item[col.key])} alt="Item ICON" className="item-icon" />
+                              : col.key === "condition"
+                              ? getConditionLabel(item[col.key])
                               : col.key === "date_created"
                               ? item[col.key]?.slice(0, 10)
                               :
@@ -383,7 +386,7 @@ const DashboardPage = () => {
                   </div>
                 </div>
                 <p><strong>{t('item_comment')}:</strong> {selectedItem.comment}</p>
-                <p><strong>{t('item_condition')}:</strong> {selectedItem.condition}</p>
+                <p><strong>{t('item_condition')}:</strong> {getConditionLabel(selectedItem.condition)}</p>
                 <p><strong>{t('item_number')}:</strong> {selectedItem.number}</p>
                 <p><strong>{t('item_edition')}:</strong> {selectedItem.edition}</p>
                 <ImageLightbox src={getPublicImageUrl(selectedItem.image_path)} alt={selectedItem.name || "Item image"} />

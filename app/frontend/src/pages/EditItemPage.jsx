@@ -4,6 +4,7 @@ import axios from "../api/axiosConfig";
 import "./AddItemPage.css";
 import "../components/Form.css";
 import { useTranslation } from 'react-i18next';
+import { getConditionLabel, CONDITIONS } from '../utils/TranslationHelper';
 
 
 const EditItemPage = () => {
@@ -235,12 +236,11 @@ const EditItemPage = () => {
             <label htmlFor="condition">{t('item_condition')}</label>
             <select id="condition" name="condition" value={formData.condition} onChange={handleChange}>
               <option value="">-- {t('item_condition_select')} --</option>
-              <option value="New">{t('item_condition_value_new')}</option>
-              <option value="Very Good">{t('item_condition_value_very_good')}</option>
-              <option value="Good">{t('item_condition_value_good')}</option>
-              <option value="Used">{t('item_condition_value_used')}</option>
-              <option value="Damaged">{t('item_condition_value_damaged')}</option>
-              <option value="Heavily Damaged">{t('item_condition_value_heavily_damaged')}</option>
+              {CONDITIONS.map((condition) => (
+                <option key={condition} value={condition}>
+                  {getConditionLabel(condition)}
+                </option>
+              ))}
             </select>
           </div>
 
