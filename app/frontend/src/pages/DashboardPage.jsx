@@ -83,6 +83,13 @@ const DashboardPage = () => {
     return optionalColumns.map((col) => col.key); // default: all optional columns visible
   });
 
+  // Storing in localStorage
+  useEffect(() => {
+    if (selectedContainer) {
+      localStorage.setItem("selectedContainer", selectedContainer);
+    }
+  }, [selectedContainer]);
+
   useEffect(() => {
     localStorage.setItem("visibleColumns", JSON.stringify(visibleColumns));
   }, [visibleColumns]);
@@ -93,17 +100,14 @@ const DashboardPage = () => {
     );
   };
 
+  // Fetch items
   useEffect(() => {
     if (!selectedContainer) return;
 
-    // Keep selected one on refresh
-    localStorage.setItem("selectedContainer", selectedContainer);
-
     const fetchItems = async () => {
-      console.log("Fetching items...")
+      console.log("Fetching items...");
       try {
-        const response = await axios.get(`/containers/${selectedContainer}/items`)
-        // Check if data is an array
+        const response = await axios.get(`/containers/${selectedContainer}/items`);
         if (!Array.isArray(response.data)) {
           throw new Error("Invalid response format");
         }
@@ -114,10 +118,8 @@ const DashboardPage = () => {
           console.error("User not authenticated");
           navigate("/login");
         } else {
-          /* TODO: Handle how to check if selectedContainer is still present, if not reset it */
-          setSelectedContainer(null)
-          /*console.error("Error fetching dashboard columns:", error.message);
-          navigate("/error", { state: { message: `Error fetching dashboard columns: ${error.message}` }});*/
+          console.error("Error fetching items:", error.message);
+          setSelectedContainer(null);
         }
       }
     };
@@ -125,22 +127,16 @@ const DashboardPage = () => {
     fetchItems();
   }, [selectedContainer, navigate]);
 
+  // Fetch categories
   useEffect(() => {
     if (!selectedContainer) return;
-
-    // Keep selected one on refresh
-    localStorage.setItem("selectedContainer", selectedContainer);
 
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`/container/${selectedContainer}/categories`);
         if (!Array.isArray(response.data)) {
           console.error("Expected an array but got:", response.data);
-          navigate("/error", {
-            state: {
-              message: `Error fetching categories: Expected an array but got ${typeof response.data}`
-            }
-          });
+          setCategories([]);
           return;
         }
 
@@ -151,16 +147,16 @@ const DashboardPage = () => {
           setCategories([]);
         }
       } catch (error) {
-        /* TODO: Handle how to check if selectedContainer is still present, if not reset it */
-        setSelectedContainer(null)
-        // console.error("Error fetching categories:", error.message);
-        // navigate("/error", { state: { message: `Error fetching categories: ${error.message}` }});
+        console.error("Error fetching categories:", error.message);
+        setSelectedContainer(null);
+        setCategories([]);
       }
     };
 
     fetchCategories();
-  }, [selectedContainer, navigate]);
+  }, [selectedContainer, navigate, t]);
 
+  // Fetch containers one time
   useEffect(() => {
     const fetchContainers = async () => {
       try {
@@ -175,7 +171,6 @@ const DashboardPage = () => {
           return;
         }
 
-        const containerNames = response.data.map(container => container.name);
         setContainers(response.data.map(container => ({
           id: container._id,
           name: container.name
@@ -187,12 +182,10 @@ const DashboardPage = () => {
     };
 
     fetchContainers();
-  }, [selectedContainer, navigate]);
+  }, [navigate]);
   
   const filteredItems = items.filter((item) => {
-    // Filter by category
     const matchesCategory = selectedCategory === t('selected_category_all') || item.category === selectedCategory;
-    // Filter by search term
     const search = searchTerm.toLowerCase();
     const matchesSearch =
       item.name?.toLowerCase().includes(search) ||
