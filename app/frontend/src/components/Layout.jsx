@@ -32,16 +32,16 @@ const Layout = ({ children }) => {
             <p style={{ color: "white" }} >{t('not_logged_in')}</p>
           )}
 
-          <Link to="/" className="nav-button">{t('home')}</Link>
+          <Link to="/" className="nav-button"><strong>{t('home')}</strong></Link>
           {!isAuthenticated && (
             <>
-                <Link to="/login" className="nav-button">{t('login')}</Link>
+                <Link to="/login" className="nav-button"><strong>{t('login')}</strong></Link>
             </>
           )}
           {isAuthenticated && (
             <>
-              <Link to="/dashboard" className="nav-button">{t('dashboard')}</Link>
-              <Link to="/logout" className="nav-button">{t('logout')}</Link>
+              <Link to="/dashboard" className="nav-button"><strong>{t('dashboard')}</strong></Link>
+              <Link to="/logout" className="nav-button"><strong>{t('logout')}</strong></Link>
             </>
           )}
 

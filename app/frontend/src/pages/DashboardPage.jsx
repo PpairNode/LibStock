@@ -219,7 +219,7 @@ const DashboardPage = () => {
                 }
               }}
             >
-              {t('add_text')} {t('item_text')}
+              <strong>{t('add_text')} {t('item_text')}</strong>
             </Link>
             <Link
               to={`/container/${selectedContainer}/category`}
@@ -228,9 +228,9 @@ const DashboardPage = () => {
                 if (!selectedContainer) e.preventDefault(); // prevent navigation if no container
               }}
             >
-              {t('categories_text')}
+              <strong>{t('categories_text')}</strong>
             </Link>
-            <Link to="/container/" className="nav-button">{t('containers_text')}</Link>
+            <Link to="/container/" className="nav-button"><strong>{t('containers_text')}</strong></Link>
         </div>
       </div>
 

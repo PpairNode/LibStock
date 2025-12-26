@@ -156,7 +156,7 @@ const AddCategoryPage = () => {
                           setEditName(cat.name);
                         }}
                       >
-                        Update
+                        {t('update_text')}
                       </button>
                     )}
                   </td>
