@@ -155,7 +155,7 @@ const AddContainerPage = () => {
                         setEditName(container.name);
                       }}
                     >
-                      Update
+                      {t('update_text')}
                     </button>
                   )}
                 </td>
