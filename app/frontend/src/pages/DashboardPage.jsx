@@ -159,7 +159,7 @@ const DashboardPage = () => {
     };
 
     fetchCategories();
-  }, [navigate]);
+  }, [selectedContainer, navigate]);
 
   useEffect(() => {
     const fetchContainers = async () => {
@@ -187,7 +187,7 @@ const DashboardPage = () => {
     };
 
     fetchContainers();
-  }, [navigate]);
+  }, [selectedContainer, navigate]);
   
   const filteredItems = items.filter((item) => {
     // Filter by category
