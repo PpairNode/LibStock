@@ -171,7 +171,7 @@ const EditItemPage = () => {
       <form onSubmit={handleSubmit} className="item-form-grid">
         <div className="form-group">
           <div className="form-row">
-            <label htmlFor="owner">{t('item_owner')}</label>
+            <label htmlFor="owner">{t('item_owner')}*</label>
             <input id="owner" name="owner" value={formData.owner} onChange={handleChange} style={{ backgroundColor: "#f0f0f0" }} required />
           </div>
 

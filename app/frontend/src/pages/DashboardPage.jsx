@@ -206,7 +206,13 @@ const DashboardPage = () => {
       item.name?.toLowerCase().includes(search) ||
       item.creator?.toLowerCase().includes(search) ||
       item.owner?.toLowerCase().includes(search) ||
-      item.date_created?.toLowerCase().includes(search) ||
+      item.description?.toLowerCase().includes(search) ||
+      item.comment?.toLowerCase().includes(search) ||
+      item.edition?.toLowerCase().includes(search) ||
+      item.author?.toLowerCase().includes(search) ||
+      item.condition?.toLowerCase().includes(search) ||
+      item.location?.toLowerCase().includes(search) ||
+      item.serie?.toLowerCase().includes(search) ||
       (item.tags && item.tags.some(tag => tag.toLowerCase().includes(search)));
 
     return matchesCategory && matchesSearch;
