@@ -10,7 +10,7 @@ from flask_login import login_required, current_user
 from pymongo.errors import DuplicateKeyError
 from werkzeug.utils import secure_filename
 from app.db import db
-from app.utils import UPLOAD_FOLDER, MAX_NAME
+from app.utils import UPLOAD_FOLDER, MAX_SIZE_NAME, MAX_SIZE_TEXT, MAX_SIZE_TAGS_LIST
 from app.extensions import limiter
 
 api_bp = Blueprint("api", __name__)
@@ -53,12 +53,59 @@ def get_container_access(container_id: str, user_id):
         return None, None
     return container, container_id
 
+# CHECKS
+key_size_checks = ['owner', 'name', 'serie', 'description', 'location', 'tags', 'comment', 'edition']
+
+def validate_item_data(data):
+    """Validate item data fields"""
+    # Validate name specifically
+    item_name = data.get('name', '').strip()
+    if not item_name or len(item_name) > MAX_SIZE_NAME:
+        return f"Invalid item name length ({MAX_SIZE_NAME} characters maximum)"
+    
+    # Validate text fields
+    for key in key_size_checks:
+        value = data.get(key, "")
+        if value and len(value) > MAX_SIZE_TEXT:
+            return jsonify({"error": f"{key} too long"}), 400
+    
+    # Validate tags
+    tags = data.get("tags", [])
+    if not isinstance(tags, list):
+        return "Tags must be a list"
+    if len(tags) > MAX_SIZE_TAGS_LIST:
+        return f"Too many tags ({MAX_SIZE_TAGS_LIST} tags maximum)"
+    for tag in tags:
+        if len(str(tag)) > MAX_SIZE_NAME:
+            return f"Tag value too long ({MAX_SIZE_NAME} characters maximum)"
+    
+    return None  # No error
+
 
 # API Methods
 
 @api_bp.route("/user", methods=["GET"])
 @login_required
 def get_current_user():
+    """
+    Get current user information
+    ---
+    tags:
+      - User
+    security:
+      - Session: []
+    responses:
+      200:
+        description: Current user details
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+              example: "john_doe"
+      401:
+        description: Not authenticated
+    """
     return jsonify({
         "username": current_user.username
     })
@@ -69,6 +116,37 @@ def get_current_user():
 @api_bp.route("/containers", methods=["GET"])
 @login_required
 def list_containers():
+    """
+    List all containers for current user
+    ---
+    tags:
+      - Containers
+    security:
+      - Session: []
+    responses:
+      200:
+        description: List of containers
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: "507f1f77bcf86cd799439011"
+              name:
+                type: string
+                example: "My Collection"
+              admin_id:
+                type: string
+                example: "507f1f77bcf86cd799439012"
+              member_ids:
+                type: array
+                items:
+                  type: string
+      401:
+        description: Not authenticated
+    """
     # Triage by current user
     user_id = ObjectId(current_user.id)
     containers = list(db.containers.find({ "member_ids": user_id }))
@@ -82,13 +160,58 @@ def list_containers():
 @api_bp.route("/container/add", methods=["POST"])
 @login_required
 def add_container():
+    """
+    Create a new container
+    ---
+    tags:
+      - Containers
+    security:
+      - Session: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              example: "Video Games Collection"
+              maxLength: 200
+    responses:
+      201:
+        description: Container created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Container added"
+            id:
+              type: string
+              example: "507f1f77bcf86cd799439011"
+      400:
+        description: Invalid input
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Missing fields"
+      401:
+        description: Not authenticated
+      409:
+        description: Container already exists
+    """
     data = request.get_json()
     required_fields = ["name"]
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing fields"}), 400
     container_name = data["name"].strip()
-    if not container_name or len(container_name) > MAX_NAME:
-        return jsonify({"error": f"Invalid container name length ({MAX_NAME} characters maximum)"}), 400
+    if not container_name or len(container_name) > MAX_SIZE_NAME:
+        return jsonify({"error": f"Invalid container name length ({MAX_SIZE_NAME} characters maximum)"}), 400
     user_id = safe_object_id(current_user.id)
     if not user_id:
         return jsonify({"error": "User not found"}), 404
@@ -118,6 +241,36 @@ def add_container():
 @api_bp.route("/container/delete/<container_id>", methods=["DELETE"])
 @login_required
 def delete_container(container_id):
+    """
+    Delete a container and all its contents
+    ---
+    tags:
+      - Containers
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+        description: Container ID
+        example: "507f1f77bcf86cd799439011"
+    responses:
+      200:
+        description: Container deleted successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Container deleted successfully"
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      404:
+        description: Container not found
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -135,6 +288,43 @@ def delete_container(container_id):
 @api_bp.route("/container/update/<container_id>", methods=["POST"])
 @login_required
 def update_container(container_id):
+    """
+    Update container name
+    ---
+    tags:
+      - Containers
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+        description: Container ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              example: "Updated Collection Name"
+              maxLength: 200
+    responses:
+      201:
+        description: Container updated successfully
+      400:
+        description: Invalid input
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      404:
+        description: Container not found
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -146,8 +336,8 @@ def update_container(container_id):
         return jsonify({"error": "Missing fields"}), 400
     
     container_name = data['name']
-    if not container_name or len(container_name) > MAX_NAME:
-        return jsonify({"error": f"Invalid container name length ({MAX_NAME} characters maximum)"}), 400
+    if not container_name or len(container_name) > MAX_SIZE_NAME:
+        return jsonify({"error": f"Invalid container name length ({MAX_SIZE_NAME} characters maximum)"}), 400
     
     result = db.containers.update_one(
         {"_id": container_id},
@@ -162,6 +352,40 @@ def update_container(container_id):
 @api_bp.route("/container/<container_id>", methods=["GET"])
 @login_required
 def get_container(container_id):
+    """
+    Get container details
+    ---
+    tags:
+      - Containers
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+        description: Container ID
+    responses:
+      200:
+        description: Container details
+        schema:
+          type: object
+          properties:
+            _id:
+              type: string
+            name:
+              type: string
+            admin_id:
+              type: string
+            member_ids:
+              type: array
+              items:
+                type: string
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -179,6 +403,40 @@ def get_container(container_id):
 @api_bp.route("/container/<container_id>/categories", methods=["GET"])
 @login_required
 def list_categories(container_id):
+    """
+    List all categories in a container
+    ---
+    tags:
+      - Categories
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+        description: Container ID
+    responses:
+      200:
+        description: List of categories
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: "507f1f77bcf86cd799439011"
+              name:
+                type: string
+                example: "ELECTRONICS"
+              container_id:
+                type: string
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -193,6 +451,50 @@ def list_categories(container_id):
 @api_bp.route("/container/<container_id>/category/add", methods=["POST"])
 @login_required
 def add_category(container_id):
+    """
+    Add a new category to a container
+    ---
+    tags:
+      - Categories
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+        description: Container ID
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              example: "Electronics"
+              maxLength: 200
+    responses:
+      201:
+        description: Category created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            id:
+              type: string
+      400:
+        description: Invalid input
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      409:
+        description: Category already exists
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -206,8 +508,8 @@ def add_category(container_id):
         "name": category_name,
         "container_id": container_id
     }
-    if not category_name or len(category_name) > MAX_NAME:
-        return jsonify({"error": f"Invalid category name length ({MAX_NAME} characters maximum)"}), 400
+    if not category_name or len(category_name) > MAX_SIZE_NAME:
+        return jsonify({"error": f"Invalid category name length ({MAX_SIZE_NAME} characters maximum)"}), 400
     try:
         result = db.categories.insert_one(category)
     except DuplicateKeyError:
@@ -218,6 +520,45 @@ def add_category(container_id):
 @api_bp.route("/container/<container_id>/category/update/<category_id>", methods=["POST"])
 @login_required
 def update_category(container_id, category_id):
+    """
+    Update a category name
+    ---
+    tags:
+      - Categories
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+      - name: category_id
+        in: path
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              maxLength: 200
+    responses:
+      201:
+        description: Category updated
+      400:
+        description: Invalid input
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      404:
+        description: Category not found
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -233,8 +574,8 @@ def update_category(container_id, category_id):
         return jsonify({"error": "Missing fields"}), 400
     
     cat_name = data['name']
-    if not cat_name or len(cat_name) > MAX_NAME:
-        return jsonify({"error": f"Invalid category name length ({MAX_NAME} characters maximum)"}), 400
+    if not cat_name or len(cat_name) > MAX_SIZE_NAME:
+        return jsonify({"error": f"Invalid category name length ({MAX_SIZE_NAME} characters maximum)"}), 400
     
     result = db.categories.update_one(
         {"_id": category_id, "container_id": container_id},
@@ -249,6 +590,34 @@ def update_category(container_id, category_id):
 @api_bp.route("/container/<container_id>/category/delete/<category_id>", methods=["DELETE"])
 @login_required
 def delete_category(container_id, category_id):
+    """
+    Delete a category and all its items
+    ---
+    tags:
+      - Categories
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+      - name: category_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Category deleted successfully
+      400:
+        description: Invalid input
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      404:
+        description: Category not found
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -270,6 +639,53 @@ def delete_category(container_id, category_id):
 @api_bp.route("/container/<container_id>/items", methods=["GET"])
 @login_required
 def list_items_for_container(container_id):
+    """
+    List all items in a container
+    ---
+    tags:
+      - Items
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: List of items
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              value:
+                type: number
+              category:
+                type: string
+              condition:
+                type: string
+              owner:
+                type: string
+              tags:
+                type: array
+                items:
+                  type: string
+      401:
+        description: Not authenticated
+      403:
+        description: Access denied
+      404:
+        description: Container not found
+      500:
+        description: Internal server error
+    """
     try:
         container, container_id = get_container_access(container_id, current_user.id)
         if not container:
@@ -299,6 +715,88 @@ def list_items_for_container(container_id):
 @api_bp.route("/container/<container_id>/item/add", methods=["GET", "POST"])
 @login_required
 def add_item(container_id):
+    """
+    Get item template or add new item
+    ---
+    tags:
+      - Items
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          required:
+            - owner
+            - name
+            - value
+            - category
+          properties:
+            owner:
+              type: string
+              example: "john_doe"
+            name:
+              type: string
+              example: "Nintendo Switch"
+              maxLength: 200
+            serie:
+              type: string
+              maxLength: 5000
+            description:
+              type: string
+              maxLength: 5000
+            value:
+              type: number
+              example: 299.99
+            date_created:
+              type: string
+              format: date
+              example: "2024-01-15"
+            location:
+              type: string
+              maxLength: 5000
+            tags:
+              type: array
+              items:
+                type: string
+              maxItems: 50
+            image_path:
+              type: string
+            category:
+              type: string
+              description: Category ID
+            comment:
+              type: string
+              maxLength: 5000
+            condition:
+              type: string
+              enum: ["New", "Very Good", "Good", "Used", "Damaged", "Heavily Damaged"]
+            number:
+              type: integer
+              example: 1
+            edition:
+              type: string
+              maxLength: 5000
+    responses:
+      200:
+        description: Item template (GET request)
+      201:
+        description: Item created successfully (POST request)
+      400:
+        description: Invalid input
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      404:
+        description: Category not found
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -327,8 +825,8 @@ def add_item(container_id):
     else:  # POST
         data = request.get_json()
         item_name = data['name']
-        if not item_name or len(item_name) > MAX_NAME:
-            return jsonify({"error": f"Invalid item name length ({MAX_NAME} characters maximum)"}), 400
+        if not item_name or len(item_name) > MAX_SIZE_NAME:
+            return jsonify({"error": f"Invalid item name length ({MAX_SIZE_NAME} characters maximum)"}), 400
 
         required_fields = ["owner", "name", "value", "category"]
         if not all(field in data for field in required_fields):
@@ -343,6 +841,11 @@ def add_item(container_id):
         })
         if not category:
             return jsonify({"error": "Category not found in this container"}), 404
+        
+        # Size checks
+        error = validate_item_data(data)
+        if error:
+            return jsonify({"error": error}), 400
 
         item = {
             "container_id": container_id,
@@ -371,6 +874,37 @@ def add_item(container_id):
 @api_bp.route('/media/<filename>')
 @limiter.limit("100 per hour")
 def media(filename):
+    """
+    Retrieve uploaded media file
+    ---
+    tags:
+      - Media
+    parameters:
+      - name: filename
+        in: path
+        type: string
+        required: true
+        description: Filename of the uploaded image
+        example: "a1b2c3d4e5f6.png"
+    responses:
+      200:
+        description: File content
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+      400:
+        description: Invalid filename
+      404:
+        description: File not found
+      429:
+        description: Too many requests
+    """
     try:
         safe_name = secure_filename(filename)
         if safe_name != filename:
@@ -394,6 +928,39 @@ def allowed_rename_file(filename) -> str | None:
 @limiter.limit("10 per hour")
 @login_required
 def upload_image():
+    """
+    Upload an image file
+    ---
+    tags:
+      - Media
+    security:
+      - Session: []
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: image
+        in: formData
+        type: file
+        required: true
+        description: Image file to upload (png, jpg, jpeg, gif)
+    responses:
+      200:
+        description: Image uploaded successfully
+        schema:
+          type: object
+          properties:
+            image_path:
+              type: string
+              example: "a1b2c3d4e5f6.png"
+      400:
+        description: Invalid file or file type
+      401:
+        description: Not authenticated
+      413:
+        description: File too large (max 16MB)
+      429:
+        description: Too many requests (max 10 per hour)
+    """
     file = request.files.get('image')
     if not file:
         return jsonify({"error": "Invalid image file"}), 400
@@ -411,6 +978,34 @@ def upload_image():
 @api_bp.route("/container/<container_id>/item/delete/<item_id>", methods=["DELETE"])
 @login_required
 def delete_item(container_id, item_id):
+    """
+    Delete an item
+    ---
+    tags:
+      - Items
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+      - name: item_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Item deleted successfully
+      400:
+        description: Invalid item ID
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      404:
+        description: Item not found
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -439,30 +1034,137 @@ def delete_item(container_id, item_id):
 @api_bp.route("/container/<container_id>/item/update/<item_id>", methods=["GET"])
 @login_required
 def get_item_by_id(container_id, item_id):
+    """
+    Get item details for editing
+    ---
+    tags:
+      - Items
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+      - name: item_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Item details
+        schema:
+          type: object
+          properties:
+            _id:
+              type: string
+            container_id:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            value:
+              type: number
+            category_id:
+              type: string
+            # ... other fields
+      400:
+        description: Invalid item ID
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      404:
+        description: Item not found
+      500:
+        description: Internal server error
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         print("Container access denied")
         return jsonify({"error": "Unauthorized access to this container!"}), 403
     
     item_id = safe_object_id(item_id)
+    if not item_id:
+        return jsonify({"error": "Invalid item ID"}), 400
 
     try:
         item = db.items.find_one({"container_id": container_id, "_id": item_id})
         if not item:
             print("Item not found in database")
-            return jsonify({"message": "Item not found"}), 404
+            return jsonify({"error": "Item not found"}), 404
 
         item["_id"] = str(item["_id"])
         item["container_id"] = str(item["container_id"])
         item["category_id"] = str(item["category_id"])
         return jsonify(item), 200
     except Exception as e:
-        return jsonify({"message": f"Failed to fetch item"}), 500
+        print(f"Error fetching item: {e}")
+        return jsonify({"error": f"Failed to fetch item"}), 500
 
 
 @api_bp.route("/container/<container_id>/item/update/<item_id>", methods=["POST"])
 @login_required
 def update_item(container_id, item_id):
+    """
+    Update an item
+    ---
+    tags:
+      - Items
+    security:
+      - Session: []
+    parameters:
+      - name: container_id
+        in: path
+        type: string
+        required: true
+      - name: item_id
+        in: path
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              maxLength: 200
+            serie:
+              type: string
+              maxLength: 5000
+            description:
+              type: string
+              maxLength: 5000
+            value:
+              type: number
+            category:
+              type: string
+              description: Category ID
+            condition:
+              type: string
+            owner:
+              type: string
+            tags:
+              type: array
+              items:
+                type: string
+              maxItems: 50
+            # ... other fields
+    responses:
+      200:
+        description: Item updated successfully
+      400:
+        description: Invalid input
+      401:
+        description: Not authenticated
+      403:
+        description: Unauthorized access
+      404:
+        description: Item or category not found
+    """
     container, container_id = get_container_access(container_id, current_user.id)
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
@@ -472,6 +1174,12 @@ def update_item(container_id, item_id):
     category_id = safe_object_id(data.get('category'))
     if category_id is None:
         return jsonify({"error": "Invalid category ID"}), 400
+    category = db.categories.find_one({
+        "_id": category_id,
+        "container_id": container_id
+    })
+    if not category:
+        return jsonify({"error": "Category not found in this container"}), 404
     item_id = safe_object_id(item_id)
     if item_id is None:
         return jsonify({"error": "Invalid item ID"}), 400
@@ -479,9 +1187,14 @@ def update_item(container_id, item_id):
     if item is None:
         return jsonify({"error": "Item not found in this container"}), 404
     
+    # Size checks
     item_name = data['name']
-    if not item_name or len(item_name) > MAX_NAME:
-        return jsonify({"error": f"Invalid item name length ({MAX_NAME} characters maximum)"}), 400
+    if not item_name or len(item_name) > MAX_SIZE_NAME:
+        return jsonify({"error": f"Invalid item name length ({MAX_SIZE_NAME} characters maximum)"}), 400
+    
+    error = validate_item_data(data)
+    if error:
+        return jsonify({"error": error}), 400
     
     update_fields = {
         "name": data["name"],

@@ -3,6 +3,7 @@ flask-login
 flask-bcrypt
 flask-cors
 flask-limiter
+flasgger
 pyopenssl
 pymongo
 python-dotenv

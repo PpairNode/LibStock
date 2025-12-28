@@ -4,7 +4,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from app.api import api_bp
 from app.authentification import auth_bp
-from app.extensions import login_manager, bcrypt, limiter
+from app.extensions import login_manager, bcrypt, limiter, swagger
 from app.utils import UPLOAD_FOLDER
 
 
@@ -36,6 +36,9 @@ def create_app(debug: bool = False):
 
     # Set the limiter
     limiter.init_app(app)
+
+    # Set the swagger
+    swagger.init_app(app)
     
     # Add cross origin cookies
     origin = os.getenv("REACT_HOST_ORIGIN")
