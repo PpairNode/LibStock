@@ -176,6 +176,20 @@ const DashboardPage = () => {
           id: container._id,
           name: container.name
         })));
+
+        // Check if saved containers still exists and if not, delete them from localstorage 
+        const savedContainerId = localStorage.getItem("selectedContainer");
+        if (savedContainerId) {
+          const containerExists = response.data.some(c => c._id === savedContainerId);
+          if (!containerExists) {
+            console.log("Saved container no longer exists, clearing selection");
+            localStorage.removeItem("selectedContainer");
+            localStorage.removeItem("selectedCategory");
+            setSelectedContainer(null);
+            setSelectedCategory('');
+          }
+        }
+
       } catch (error) {
         console.error("Error fetching containers:", error.message);
         navigate("/error", { state: { message: `Error fetching containers: ${error.message}` }});
@@ -200,7 +214,8 @@ const DashboardPage = () => {
 
   const totalValue = filteredItems.reduce((sum, item) => {
     const value = parseFloat(item.value);
-    return sum + (isNaN(value) ? 0 : value);
+    const number = parseInt(item.number)
+    return sum + (isNaN(value) ? 0 : value * number);
   }, 0);
 
 
