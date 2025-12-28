@@ -1,9 +1,8 @@
 import os
-from flask import Flask, Response, request
+from flask import Flask
 from flask_cors import CORS
 from dotenv import load_dotenv
 from app.api import api_bp
-from app.authentification import auth_bp
 from app.extensions import login_manager, bcrypt, limiter, swagger
 from app.utils import UPLOAD_FOLDER
 
@@ -32,7 +31,7 @@ def create_app(debug: bool = False):
 
     # Set the login manager
     login_manager.init_app(app)
-    login_manager.login_view = "auth.login"
+    login_manager.login_view = "api.login"
 
     # Set the limiter
     limiter.init_app(app)
@@ -48,7 +47,6 @@ def create_app(debug: bool = False):
     app.secret_key = os.getenv("APP_SECRET_KEY")
 
     # Register routes blueprint
-    app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(api_bp, url_prefix='/api')
 
 
