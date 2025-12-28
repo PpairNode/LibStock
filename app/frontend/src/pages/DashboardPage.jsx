@@ -108,7 +108,7 @@ const DashboardPage = () => {
     const fetchItems = async () => {
       console.log("Fetching items...");
       try {
-        const response = await axios.get(`/containers/${selectedContainer}/items`);
+        const response = await axios.get(`/container/${selectedContainer}/items`);
         if (!Array.isArray(response.data)) {
           throw new Error("Invalid response format");
         }
