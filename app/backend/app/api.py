@@ -6,33 +6,39 @@ from bson.errors import InvalidId
 from pathlib import Path
 from flask import request, jsonify, Blueprint, send_from_directory
 from flask_login import login_required, current_user
+# Mongo
 from pymongo.errors import DuplicateKeyError
 from werkzeug.utils import secure_filename
 from app.db import db
-from app.utils import UPLOAD_FOLDER
-
-
+from app.utils import UPLOAD_FOLDER, MAX_NAME
+from app.extensions import limiter
 
 api_bp = Blueprint("api", __name__)
 
-
-@api_bp.route("/user", methods=["GET"])
-@login_required
-def get_current_user():
-    return jsonify({
-        "username": current_user.username
-    })
-
-
+# SAFE METHODS FOR VALUE VALIDATION
 def safe_object_id(id_string):
     """Safely convert string to ObjectId"""
     try:
         return ObjectId(id_string)
     except (InvalidId, TypeError):
         return None
+    
+def safe_float(value, default=0.0):
+    if value is None:
+        return default
+    try:
+        return round(float(value), 2)
+    except (ValueError, TypeError):
+        return default
+    
+def safe_int(value, default=0):
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return default
 
-
-# TODO: upgrade error handling
 def get_container_access(container_id: str, user_id):
     container_id = safe_object_id(container_id)
     if container_id is None:
@@ -41,12 +47,21 @@ def get_container_access(container_id: str, user_id):
     container = db.containers.find_one({"_id": container_id})
     if not container:
         return None, None
-    user_id = ObjectId(current_user.id)
+    user_id = safe_object_id(current_user.id)
     if user_id != container["admin_id"] and user_id not in container["member_ids"]:
         print(f"Unauthorized access detected from user ID: {user_id}!")
         return None, None
     return container, container_id
 
+
+# API Methods
+
+@api_bp.route("/user", methods=["GET"])
+@login_required
+def get_current_user():
+    return jsonify({
+        "username": current_user.username
+    })
 
 @api_bp.route("/containers", methods=["GET"])
 @login_required
@@ -68,7 +83,7 @@ def list_categories(container_id):
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
     
-    categories = list(db.categories.find({ "container_id": container["_id"] }))
+    categories = list(db.categories.find({ "container_id": container_id }))
     for cat in categories:
         cat["_id"] = str(cat["_id"])  # Convert ObjectId to string
         cat["container_id"] = str(cat["container_id"])
@@ -91,6 +106,8 @@ def add_category(container_id):
         "name": category_name,
         "container_id": container_id
     }
+    if not category_name or len(category_name) > MAX_NAME:
+        return jsonify({"error": f"Invalid category name length ({MAX_NAME} characters maximum)"}), 400
     try:
         result = db.categories.insert_one(category)
     except DuplicateKeyError:
@@ -114,6 +131,10 @@ def update_category(container_id, category_id):
     required_fields = ["name"]
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing fields"}), 400
+    
+    cat_name = data['name']
+    if not cat_name or len(cat_name) > MAX_NAME:
+        return jsonify({"error": f"Invalid category name length ({MAX_NAME} characters maximum)"}), 400
     
     result = db.categories.update_one(
         {"_id": category_id, "container_id": container_id},
@@ -169,7 +190,8 @@ def list_items_for_container(container_id):
             item["category"] = category["name"]
         return jsonify(items), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @api_bp.route("/container/add", methods=["POST"])
@@ -180,6 +202,8 @@ def add_container():
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing fields"}), 400
     container_name = data["name"].strip()
+    if not container_name or len(container_name) > MAX_NAME:
+        return jsonify({"error": f"Invalid container name length ({MAX_NAME} characters maximum)"}), 400
     user_id = safe_object_id(current_user.id)
     if not user_id:
         return jsonify({"error": "User not found"}), 404
@@ -235,6 +259,10 @@ def update_container(container_id):
     required_fields = ["name"]
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing fields"}), 400
+    
+    container_name = data['name']
+    if not container_name or len(container_name) > MAX_NAME:
+        return jsonify({"error": f"Invalid container name length ({MAX_NAME} characters maximum)"}), 400
     
     result = db.containers.update_one(
         {"_id": container_id},
@@ -292,6 +320,9 @@ def add_item(container_id):
     
     else:  # POST
         data = request.get_json()
+        item_name = data['name']
+        if not item_name or len(item_name) > MAX_NAME:
+            return jsonify({"error": f"Invalid item name length ({MAX_NAME} characters maximum)"}), 400
 
         required_fields = ["owner", "name", "value", "category"]
         if not all(field in data for field in required_fields):
@@ -300,12 +331,12 @@ def add_item(container_id):
         category_id = safe_object_id(data.get('category'))
         if category_id is None:
             return jsonify({"error": "Invalid category ID"}), 400
-        result = db.categories.find({"_id": category_id})
-        if result is None:
-            return jsonify({"error": "Invalid category"}), 400
+        category = db.categories.find_one({"_id": category_id})
+        if category is None:
+            return jsonify({"error": "Category not found in this container"}), 404
 
         item = {
-            "container_id": ObjectId(container_id),
+            "container_id": container_id,
             "owner": data["owner"],
             "name": data["name"],
             "serie": data["serie"],
@@ -329,12 +360,15 @@ def add_item(container_id):
     
 
 @api_bp.route('/media/<filename>')
+@limiter.limit("100 per hour")
 def media(filename):
     try:
-        resp = send_from_directory(str(Path(UPLOAD_FOLDER)), filename)
-        return resp
+        safe_name = secure_filename(filename)
+        if safe_name != filename:
+            return jsonify({"error": "Invalid filename"}), 400
+        return send_from_directory(str(Path(UPLOAD_FOLDER)), safe_name)
     except Exception as e:
-        print(f"Error in send_from_directory: {e}")
+        print(f"Error serving file: {e}")
         return jsonify({"error": "File not found"}), 404
 
 
@@ -348,6 +382,7 @@ def allowed_rename_file(filename) -> str | None:
     return None
 
 @api_bp.route('/upload/image', methods=['POST'])
+@limiter.limit("10 per hour")
 @login_required
 def upload_image():
     file = request.files.get('image')
@@ -375,16 +410,16 @@ def delete_item(container_id, item_id):
     if not item_id:
         return jsonify({"error": "Invalid item ID"}), 400
     
-    result = db.items.find_one_and_delete({
+    item = db.items.find_one_and_delete({
         "_id": item_id,
         "container_id": container["_id"]
     })
-    if not result:
+    if not item:
         return jsonify({"error": "Item not found"}), 404
     # Try to delete image if any
-    if result.get('image_path'):
+    if item.get('image_path'):
         try:
-            image_path = Path(UPLOAD_FOLDER) / result['image_path']
+            image_path = Path(UPLOAD_FOLDER) / item['image_path']
             if image_path.exists() and image_path.is_file():
                 image_path.unlink()
         except Exception as e:
@@ -400,8 +435,10 @@ def get_item_by_id(container_id, item_id):
         print("Container access denied")
         return jsonify({"error": "Unauthorized access to this container!"}), 403
     
+    item_id = safe_object_id(item_id)
+
     try:
-        item = db.items.find_one({"container_id": container_id, "_id": ObjectId(item_id)})
+        item = db.items.find_one({"container_id": container_id, "_id": item_id})
         if not item:
             print("Item not found in database")
             return jsonify({"message": "Item not found"}), 404
@@ -414,19 +451,6 @@ def get_item_by_id(container_id, item_id):
         return jsonify({"message": f"Failed to fetch item"}), 500
 
 
-def safe_float(value, default=0.0):
-    try:
-        return round(float(value), 2)
-    except (ValueError, TypeError):
-        return default
-    
-def safe_int(value, default=0):
-    try:
-        return int(value)
-    except (ValueError, TypeError):
-        return default
-
-
 @api_bp.route("/container/<container_id>/item/update/<id>", methods=["POST"])
 @login_required
 def update_item(container_id, id):
@@ -434,7 +458,7 @@ def update_item(container_id, id):
     if not container:
         return jsonify({"error": f"Unauthorized access to this container!"}), 403
 
-    data = request.json
+    data = request.get_json()
     # Validate fields here as needed
     category_id = safe_object_id(data.get('category'))
     if category_id is None:
@@ -442,25 +466,29 @@ def update_item(container_id, id):
     item_id = safe_object_id(id)
     if item_id is None:
         return jsonify({"error": "Invalid item ID"}), 400
-    result = db.items.find({ "_id": item_id })
-    if result is None:
-        return jsonify({"error": "Invalid item ID"}), 400
+    item = db.items.find_one({ "_id": item_id, "container_id": container_id })
+    if item is None:
+        return jsonify({"error": "Item not found in this container"}), 404
+    
+    item_name = data['name']
+    if not item_name or len(item_name) > MAX_NAME:
+        return jsonify({"error": f"Invalid item name length ({MAX_NAME} characters maximum)"}), 400
     
     update_fields = {
-        "name": data.get("name"),
-        "serie": data.get("serie"),
-        "description": data.get("description"),
-        "value": safe_float(data.get("value")),
-        "date_created": data.get("date_created"),
-        "location": data.get("location"),
-        "tags": data.get("tags"),
-        "creator": data.get("creator"),
+        "name": data["name"],
+        "serie": data["serie"],
+        "description": data["description"],
+        "value": safe_float(data["value"]),
+        "date_created": data["date_created"],
+        "location": data["location"],
+        "tags": data["tags"],
+        "creator": data["creator"],
         "category_id": category_id,
-        "comment": data.get("comment"),
-        "condition": data.get("condition"),
-        "owner": data.get("owner"),
-        "number": safe_int(data.get("number")),
-        "edition": data.get("edition"),
+        "comment": data["comment"],
+        "condition": data["condition"],
+        "owner": data["owner"],
+        "number": safe_int(data["number"]),
+        "edition": data["edition"],
     }
     image_path = data.get("image_path")
     print(f"Image path: {image_path}")
