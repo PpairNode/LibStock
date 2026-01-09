@@ -14,6 +14,8 @@ import AddItemPage from "./pages/AddItemPage";
 import EditItemPage from "./pages/EditItemPage";
 import CategoryPage from "./pages/CategoryPage";
 import ContainerPage from "./pages/ContainerPage";
+import ImportPage from "./pages/ImportPage";
+import ExportPage from "./pages/ExportPage";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -47,6 +49,8 @@ const App = () => {
             <Route path="/container/:containerId/item/update/:id" element={<EditItemPage />} />
             <Route path="/container/:containerId/category" element={<CategoryPage />} />
             <Route path="/container" element={<ContainerPage />} />
+            <Route path="/export" element={<ExportPage />} />
+            <Route path="/import" element={<ImportPage />} />
           </Route>
 
           {/* Fallback */}

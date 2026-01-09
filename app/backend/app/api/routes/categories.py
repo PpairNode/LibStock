@@ -120,10 +120,7 @@ def add_category(container_id):
         "container_id": container_id
     }
     
-    try:
-        result = db.categories.insert_one(category)
-    except DuplicateKeyError:
-        return jsonify({"error": "Category already exists"}), 409
+    result = db.categories.insert_one(category)
     
     return jsonify({"message": "Category added", "id": str(result.inserted_id)}), 201
 

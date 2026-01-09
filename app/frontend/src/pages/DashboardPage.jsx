@@ -252,6 +252,16 @@ const DashboardPage = () => {
               <strong>{t('categories_text')}</strong>
             </Link>
             <Link to="/container/" className="nav-button"><strong>{t('containers_text')}</strong></Link>
+            <Link
+              to="/export"
+              className={`nav-button ${!selectedContainer ? "disabled" : ""}`}
+              onClick={(e) => {
+                if (!selectedContainer) e.preventDefault(); // prevent navigation if no container
+              }}
+            >
+              <strong>{t('export')}</strong>
+            </Link>
+            <Link to="/import" className="nav-button"><strong>{t('import')}</strong></Link>
         </div>
       </div>
 

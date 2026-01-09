@@ -58,6 +58,9 @@
   "selected_category_all": "---",
   "search_bar_text": "Search items...",
   "container_selection_text": "---",
+  "import": "IMPORT",
+  "importing": "Importation",
+  "export": "EXPORT",
 
   "login_text": "LOGIN",
   "username": "Username",
@@ -76,5 +79,14 @@
   "confirm_delete_category_title": "Delete Category?",
   "confirm_delete_category_message": "Are you sure you want to delete this category? All items linked to this category will be deleted. This action cannot be undone.",
   "confirm_yes": "Delete",
-  "confirm_no": "Cancel"
+  "confirm_no": "Cancel",
+
+  "selection": "SELECTION",
+  "select_file": "Select file",
+  "file_selected": "File selected",
+  "file_size": "File size",
+  "import_strategy": "Import strategy",
+  "import_strategy_skip": "skip",
+  "import_strategy_rename": "rename",
+  "import_strategy_replace": "replace"
 }

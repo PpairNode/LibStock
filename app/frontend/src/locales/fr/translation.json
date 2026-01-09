@@ -58,6 +58,9 @@
   "selected_category_all": "---",
   "search_bar_text": "Rechercher/filtrer...",
   "container_selection_text": "---",
+  "import": "IMPORT",
+  "importing": "Importation",
+  "export": "EXPORT",
 
   "login_text": "CONNEXION",
   "username": "Identifiant",
@@ -76,5 +79,14 @@
   "confirm_delete_category_title": "Supprimer la catégorie ?",
   "confirm_delete_category_message": "Êtes-vous sûr de vouloir supprimer cette catégorie ? Tous les objets liés à cette catégorie seront supprimés. Cette action est irréversible.",
   "confirm_yes": "Supprimer",
-  "confirm_no": "Annuler"
+  "confirm_no": "Annuler",
+
+  "selection": "SELECTION",
+  "select_file": "Selectionner fichier",
+  "file_selected": "Fichier selectionné",
+  "file_size": "Taille du fichier",
+  "import_strategy": "Stratégie d'importation",
+  "import_strategy_skip": "passer",
+  "import_strategy_rename": "renommer",
+  "import_strategy_replace": "remplacer"
 }
