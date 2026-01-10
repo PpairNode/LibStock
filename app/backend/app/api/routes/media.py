@@ -1,4 +1,5 @@
 import secrets
+import base64
 from pathlib import Path
 from flask import request, jsonify, send_from_directory
 from flask_login import login_required
@@ -63,12 +64,12 @@ def media(filename):
         return jsonify({"error": "File not found"}), 404
 
 
-@api_bp.route('/upload/image', methods=['POST'])
-@limiter.limit("10 per hour")
+@api_bp.route('/upload/image/preview', methods=['POST'])
+@limiter.limit("50 per hour")  # Plus permissif car pas de sauvegarde
 @login_required
-def upload_image():
+def preview_image():
     """
-    Upload an image file
+    Convert image to base64 for preview (no server storage)
     ---
     tags:
       - Media
@@ -81,39 +82,44 @@ def upload_image():
         in: formData
         type: file
         required: true
-        description: Image file to upload (png, jpg, jpeg, gif)
+        description: Image file to preview
     responses:
       200:
-        description: Image uploaded successfully
+        description: Image converted to base64
         schema:
           type: object
           properties:
-            image_path:
+            image_data:
               type: string
-              example: "a1b2c3d4e5f6.png"
+              description: Base64 encoded image
+            image_extension:
+              type: string
+              example: ".png"
       400:
-        description: Invalid file or file type
-      401:
-        description: Not authenticated
-      413:
-        description: File too large (max 16MB)
-      429:
-        description: Too many requests (max 10 per hour)
+        description: Invalid file
     """
     file = request.files.get('image')
     if not file:
         return jsonify({"error": "No file provided"}), 400
     
-    new_name = allowed_rename_file(file.filename)
-    if new_name is None:
+    # Validate extension
+    if '.' not in file.filename:
+        return jsonify({"error": "Invalid file"}), 400
+    
+    extension = file.filename.rsplit('.', 1)[1].lower()
+    allowed_extensions = {"png", "jpg", "jpeg", "gif"}
+    if extension not in allowed_extensions:
         return jsonify({"error": "Invalid file type"}), 400
-
-    filename = secure_filename(new_name)
-    path = Path(UPLOAD_FOLDER) / filename
     
-    # Verify path traversal protection
-    if not str(path.resolve()).startswith(str(Path(UPLOAD_FOLDER).resolve())):
-        return jsonify({"error": "Invalid path"}), 400
-    
-    file.save(str(path))
-    return jsonify({"image_path": filename}), 200
+    # Convert to base64
+    try:
+        image_bytes = file.read()
+        image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+        
+        return jsonify({
+            "image_data": image_base64,
+            "image_extension": f".{extension}"
+        }), 200
+    except Exception as e:
+        print(f"Error converting image: {e}")
+        return jsonify({"error": "Failed to process image"}), 500

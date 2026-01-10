@@ -1,10 +1,12 @@
 import datetime
+import base64
 from flask import request, jsonify
 from flask_login import login_required, current_user
 from bson import ObjectId
+from pathlib import Path
 from app.api import api_bp
 from app.db import db
-from app.utils import MAX_SIZE_NAME
+from app.utils import MAX_SIZE_NAME, UPLOAD_FOLDER
 from app.api.utils.helpers import safe_object_id, safe_float, safe_int, get_container_access
 from app.api.utils.validators import validate_item_data
 
@@ -229,6 +231,22 @@ def add_item(container_id):
         error = validate_item_data(data)
         if error:
             return jsonify({"error": error}), 400
+        
+        image_path = "not-image.png"
+        if data.get("image_data"):
+            try:
+                import secrets
+                image_bytes = base64.b64decode(data["image_data"])
+                extension = data.get("image_extension", ".png")
+                new_filename = secrets.token_hex(16) + extension
+                file_path = Path(UPLOAD_FOLDER) / new_filename
+                
+                with open(file_path, "wb") as img_file:
+                    img_file.write(image_bytes)
+                
+                image_path = new_filename
+            except Exception as e:
+                print(f"Failed to save image: {e}")
 
         item = {
             "container_id": container_id,
@@ -242,7 +260,7 @@ def add_item(container_id):
             "location": data.get("location", ""),
             "creator": current_user.username,
             "tags": data.get("tags", []),
-            "image_path": data.get("image_path", "not-image.png"),
+            "image_path": image_path,
             "category_id": category_id,
             "comment": data.get("comment", ""),
             "condition": data.get("condition", ""),
@@ -480,6 +498,30 @@ def update_item(container_id, item_id):
     if error:
         return jsonify({"error": error}), 400
     
+    image_path = "not-image.png"
+    if data.get("image_data"):
+        try:
+            import secrets
+            image_bytes = base64.b64decode(data["image_data"])
+            extension = data.get("image_extension", ".png")
+            new_filename = secrets.token_hex(16) + extension
+            file_path = Path(UPLOAD_FOLDER) / new_filename
+            
+            with open(file_path, "wb") as img_file:
+                img_file.write(image_bytes)
+            
+            if item.get("image_path") and item["image_path"] != "not-image.png":
+                try:
+                    old_image = Path(UPLOAD_FOLDER) / item["image_path"]
+                    if old_image.exists():
+                        old_image.unlink()
+                except Exception as e:
+                    print(f"Failed to delete old image: {e}")
+            
+            image_path = new_filename
+        except Exception as e:
+            print(f"Failed to save new image: {e}")
+    
     update_fields = {
         "name": data.get("name"),
         "serie": data.get("serie"),
@@ -497,7 +539,6 @@ def update_item(container_id, item_id):
         "edition": data.get("edition"),
     }
     
-    image_path = data.get("image_path")
     if image_path:
         update_fields['image_path'] = image_path
 

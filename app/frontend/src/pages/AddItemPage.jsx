@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import "./AddItemPage.css";
 import "./DashboardPage.css";
 import "../components/Form.css";
-import { DEFAULT_NOT_IMAGE_PATH } from "../utils/Const"
 
 
 const AddItemPage = () => {
@@ -24,7 +23,6 @@ const AddItemPage = () => {
     location: "",
     creator: "",
     tags: "",
-    image: null,
     category: "",
     comment: "",
     condition: "",
@@ -33,10 +31,12 @@ const AddItemPage = () => {
   };
   
   const [formData, setFormData] = useState(initialFormData);
-  
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageData, setImageData] = useState(null);
+  const [imageExtension, setImageExtension] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [container, setContainer] = useState(null);
   
   const handleChange = (e) => {
@@ -44,34 +44,73 @@ const AddItemPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
   
-  // Handle image selection and immediate upload
-  const handleImageChange = async (e) => {
+  // Handle image selection and convert to base64
+  const handleImageChange = (e) => {
+    console.log("1. handleImageChange called"); // DEBUG
     const file = e.target.files[0];
-    if (!file) return;
+    console.log("2. File:", file); // DEBUG
     
-    setUploading(true);
+    if (!file) {
+      console.log("3. No file selected");
+      return;
+    }
+    
+    setLoading(true);
     setError(null);
+    console.log("4. Starting validation");
 
-    const formDataImg = new FormData();
-    formDataImg.append("image", file);
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      console.log("5. Invalid type:", file.type);
+      setError(t('invalid_image_type'));
+      setLoading(false);
+      return;
+    }
 
+    // Validate file size (16MB max)
+    const maxSize = 16 * 1024 * 1024; // 16MB
+    if (file.size > maxSize) {
+      console.log("6. File too large:", file.size);
+      setError(t('image_too_large'));
+      setLoading(false);
+      return;
+    }
+
+    console.log("7. Starting FileReader");
     try {
-      const response = await axios.post("/upload/image", formDataImg, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-        image_path: response.data.image_path,
-      }));
-
-      setSuccess("Image uploaded successfully.");
+      const reader = new FileReader();
+      
+      reader.onloadend = () => {
+        console.log("8. FileReader onloadend triggered");
+        const base64String = reader.result.split(',')[1];
+        const extension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        console.log("9. Base64 length:", base64String.length);
+        console.log("10. Extension:", extension);
+        console.log("11. Full result preview:", reader.result.substring(0, 100));
+        
+        setImageData(base64String);
+        setImageExtension(extension);
+        setImagePreview(reader.result);
+        
+        console.log("12. States should be set now");
+        setSuccess(t('image_loaded'));
+        setLoading(false);
+      };
+      
+      reader.onerror = (error) => {
+        console.log("13. FileReader ERROR:", error);
+        setError(t('image_load_failed'));
+        setLoading(false);
+      };
+      
+      console.log("14. Calling readAsDataURL");
+      reader.readAsDataURL(file);
     } catch (err) {
-      console.error("Image upload failed:", err);
-      setError("Image upload failed.");
-    } finally {
-      setUploading(false);
+      console.error("15. CATCH ERROR:", err);
+      setError(t('image_load_failed'));
+      setLoading(false);
     }
   };
 
@@ -84,35 +123,57 @@ const AddItemPage = () => {
       ...formData,
       creation_date: new Date().toISOString(),
       tags: formData.tags.split(",").map(tag => tag.trim()).filter(Boolean),
-      image_path: formData.image_path || DEFAULT_NOT_IMAGE_PATH,
+      // Include base64 image data if present
+      image_data: imageData,
+      image_extension: imageExtension,
     };
 
     try {
       await axios.post(`/container/${containerId}/item/add`, itemToSend);
-      setSuccess("Item added successfully.");
+      setSuccess(t('item_added_success'));
+      
+      // Reset form
       setFormData({
-      ...initialFormData,
-      // Preserve few values
-      owner: formData.owner,
-      category: formData.category,
-    });
+        ...initialFormData,
+        owner: formData.owner,
+        category: formData.category,
+      });
+      
+      // Reset image
+      setImageData(null);
+      setImageExtension(null);
+      setImagePreview(null);
+      
+      // Reset file input
+      const fileInput = document.getElementById('image');
+      if (fileInput) fileInput.value = '';
+      
     } catch (err) {
       console.error("Error submitting item:", err.message);
-      setError(`Failed to add item: ${err.response?.data?.error || err.message}`);
+      setError(`${t('item_add_failed')}: ${err.response?.data?.error || err.message}`);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImageData(null);
+    setImageExtension(null);
+    setImagePreview(null);
+    setSuccess(null);
+    
+    // Reset file input
+    const fileInput = document.getElementById('image');
+    if (fileInput) fileInput.value = '';
   };
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        console.log("Fetching user...");
         const res = await axios.get("/user");
         const username = res.data.username;
-        console.log("Fetched user:", username);
         setFormData((prev) => ({ ...prev, owner: username }));
       } catch (err) {
         console.error("Failed to fetch user info", err.message);
-        navigate('/error')
+        navigate('/error');
       }
     };
 
@@ -125,13 +186,13 @@ const AddItemPage = () => {
         const res = await axios.get(`/container/${containerId}/categories`);
         setCategories(res.data);
       } catch (err) {
-        console.error("Failed to fetch user info", err.message);
-        navigate('/error')
+        console.error("Failed to fetch categories", err.message);
+        navigate('/error');
       }
     };
 
     fetchCategories();
-  }, [navigate]);
+  }, [containerId, navigate]);
 
   useEffect(() => {
     const fetchContainer = async () => {
@@ -148,83 +209,80 @@ const AddItemPage = () => {
 
   return (
     <div className="container">
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
-
       <h2>{t('add_new_item_text')} <span style={{ color: "grey" }}>({t('containers_text')}: {container?.name || containerId})</span></h2>
       <form onSubmit={handleSubmit} className="item-form-grid">
         <div className="form-group">
           <div className="form-row">
-              <label htmlFor="owner">{t('item_owner')}*</label>
-              <input id="owner" name="owner" value={formData.owner || ""}  style={{ backgroundColor: "#f0f0f0" }} onChange={handleChange} required />
+            <label htmlFor="owner">{t('item_owner')}*</label>
+            <input id="owner" name="owner" value={formData.owner || ""} style={{ backgroundColor: "#f0f0f0" }} onChange={handleChange} required />
           </div>
 
           <div className="form-row">
-              <label htmlFor="name">{t('item_name')}*</label>
-              <input id="name" name="name" value={formData.name} onChange={handleChange} required />
+            <label htmlFor="name">{t('item_name')}*</label>
+            <input id="name" name="name" value={formData.name} onChange={handleChange} required />
           </div>
 
           <div className="form-row">
-              <label htmlFor="serie">{t('item_serie')}</label>
-              <input id="serie" name="serie" value={formData.serie} onChange={handleChange} />
+            <label htmlFor="serie">{t('item_serie')}</label>
+            <input id="serie" name="serie" value={formData.serie} onChange={handleChange} />
           </div>
 
           <div className="form-row">
-              <label htmlFor="description">{t('item_description')}</label>
-              <textarea id="description" name="description" value={formData.description} onChange={handleChange} />
+            <label htmlFor="description">{t('item_description')}</label>
+            <textarea id="description" name="description" value={formData.description} onChange={handleChange} />
           </div>
 
           <div className="form-row">
-              <label htmlFor="value">{t('item_value')}*</label>
-              <input id="value" name="value" type="number" value={formData.value} onChange={handleChange} required />
+            <label htmlFor="value">{t('item_value')}*</label>
+            <input id="value" name="value" type="number" step="0.01" value={formData.value} onChange={handleChange} required />
           </div>
 
           <div className="form-row">
-              <label htmlFor="date_created">{t('item_date_created')}*</label>
-              <input id="date_created" name="date_created" type="date" value={formData.date_created} onChange={handleChange} />
+            <label htmlFor="date_created">{t('item_date_created')}*</label>
+            <input id="date_created" name="date_created" type="date" value={formData.date_created} onChange={handleChange} />
           </div>
 
           <div className="form-row">
-              <label htmlFor="location">{t('item_location')}</label>
-              <input id="location" name="location" value={formData.location} onChange={handleChange} />
+            <label htmlFor="location">{t('item_location')}</label>
+            <input id="location" name="location" value={formData.location} onChange={handleChange} />
           </div>
 
           <div className="form-row">
-              <label htmlFor="creator">{t('item_creator')}</label>
-              <input id="creator" name="creator" value={formData.creator} onChange={handleChange} />
+            <label htmlFor="creator">{t('item_creator')}</label>
+            <input id="creator" name="creator" value={formData.creator} onChange={handleChange} />
           </div>
 
           <div className="form-row">
-              <label htmlFor="tags">{t('item_tags')}</label>
-              <input id="tags" name="tags" value={formData.tags} onChange={handleChange} />
+            <label htmlFor="tags">{t('item_tags')}</label>
+            <input id="tags" name="tags" value={formData.tags} onChange={handleChange} placeholder={t('tags_placeholder')} />
           </div>
 
           <div className="form-row">
-              <label htmlFor="category">{t('item_category')}*</label>
-              <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-              >
-                  <option value="">-- {t('item_category_select')} --</option>
-                  {categories.map((cat, idx) => (
-                  <option key={idx} value={cat._id}>
-                      {cat.name}
-                  </option>
-                  ))}
-              </select>
+            <label htmlFor="category">{t('item_category')}*</label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              required
+            >
+              <option value="">-- {t('item_category_select')} --</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="form-row">
-              <label htmlFor="comment">{t('item_comment')}</label>
-              <textarea id="comment" name="comment" value={formData.comment} onChange={handleChange} />
+            <label htmlFor="comment">{t('item_comment')}</label>
+            <textarea id="comment" name="comment" value={formData.comment} onChange={handleChange} />
           </div>
 
           <div className="form-row">
-              <label htmlFor="condition">{t('item_condition')}</label>
-              <select id="condition" name="condition" value={formData.condition} onChange={handleChange}>
+            <label htmlFor="condition">{t('item_condition')}</label>
+            <select id="condition" name="condition" value={formData.condition} onChange={handleChange}>
               <option value="">-- {t('item_condition_select')} --</option>
               <option value="New">{t('item_condition_value_new')}</option>
               <option value="Very Good">{t('item_condition_value_very_good')}</option>
@@ -232,7 +290,7 @@ const AddItemPage = () => {
               <option value="Used">{t('item_condition_value_used')}</option>
               <option value="Damaged">{t('item_condition_value_damaged')}</option>
               <option value="Heavily Damaged">{t('item_condition_value_heavily_damaged')}</option>
-              </select>
+            </select>
           </div>
 
           <div className="form-row">
@@ -247,14 +305,84 @@ const AddItemPage = () => {
 
           <div className="form-row">
             <label htmlFor="image">{t('item_image')}</label>
-            <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} />
-            {uploading && <p>{t('uploading')}...</p>}
-            {formData.image_path && <p>✅ {t('uploaded')}</p>}
+            <input 
+              type="file" 
+              id="image" 
+              name="image" 
+              accept="image/png,image/jpeg,image/jpg,image/gif" 
+              onChange={handleImageChange}
+            />
+            {loading && <p>{t('loading_image')}...</p>}
+            {imagePreview && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                <span style={{ fontSize: '14px' }}>{t('image_ready')}</span>
+                <button 
+                  type="button" 
+                  onClick={handleRemoveImage}
+                  style={{
+                    padding: '5px 10px',
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  🗑️ {t('remove_image')}
+                </button>
+              </div>
+            )}
           </div>
 
-          <button type="submit" className="nav-button">{t('add_text')}</button>
+          <button type="submit" className="nav-button" disabled={loading}>
+            {loading ? t('loading') : t('add_text')}
+          </button>
+
+          {/* LOG Section */}
+          {(error || success) && (
+            <div style={{
+              marginTop: '20px',
+              padding: '15px',
+              borderRadius: '8px',
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #dee2e6'
+            }}>
+              {t('log')}
+              {error && <p style={{ color: "#dc3545", margin: '5px 0', fontSize: '14px' }}>{error}</p>}
+              {success && <p style={{ color: "#28a745", margin: '5px 0', fontSize: '14px' }}>{success}</p>}
+            </div>
+          )}
         </div>
       </form>
+
+      {/* Image preview OUTSIDE the form-group */}
+      {imagePreview && (
+        <div style={{ 
+          marginTop: '5px',
+          padding: '5px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          textAlign: 'center'
+        }}>
+          <h3 style={{ marginBottom: '15px', fontSize: '16px', color: '#495057' }}>
+            {t('image_preview')}
+          </h3>
+          <img 
+            src={imagePreview} 
+            alt="Preview" 
+            style={{ 
+              maxWidth: '200px', 
+              maxHeight: '200px', 
+              objectFit: 'contain',
+              border: '2px solid #dee2e6',
+              borderRadius: '8px',
+              padding: '5px',
+              backgroundColor: 'white'
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };
