@@ -353,7 +353,7 @@ const AddItemPage = () => {
           </h3>
           <img 
             src={imagePreview} 
-            alt="Preview" 
+            alt="Preview"
             style={{ 
               maxWidth: '200px', 
               maxHeight: '200px', 

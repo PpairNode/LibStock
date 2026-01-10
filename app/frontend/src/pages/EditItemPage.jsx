@@ -371,8 +371,10 @@ const EditItemPage = () => {
           <h3 style={{ marginBottom: '15px', fontSize: '16px', color: '#495057' }}>
             {t('image_preview')}
           </h3>
-          <img 
-            src={getPublicImageUrl(imagePreview)}
+          <img
+            src={
+              imagePreview.startsWith('data:') ? imagePreview : getPublicImageUrl(imagePreview)
+            }
             alt="Preview" 
             style={{ 
               maxWidth: '200px', 
