@@ -16,6 +16,7 @@ import CategoryPage from "./pages/CategoryPage";
 import ContainerPage from "./pages/ContainerPage";
 import ImportPage from "./pages/ImportPage";
 import ExportPage from "./pages/ExportPage";
+import SummaryPage from "./pages/SummaryPage";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -51,6 +52,7 @@ const App = () => {
             <Route path="/container" element={<ContainerPage />} />
             <Route path="/export" element={<ExportPage />} />
             <Route path="/import" element={<ImportPage />} />
+            <Route path="/summary" element={<SummaryPage />} />
           </Route>
 
           {/* Fallback */}
