@@ -108,11 +108,8 @@ const AddContainerPage = () => {
 
   return (
     <div className="container">
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
-      
       <div style={{ marginBottom: "1rem" }}>
-        <h2>{t('container_head_text')}</h2><br/>
+        <h2>{t('handling')} {t('containers_text')}</h2><br/>
         <form onSubmit={handleSubmit} className="item-form-grid">
           <div className="form-group">
             <div className="form-row">
@@ -137,7 +134,7 @@ const AddContainerPage = () => {
               <tr style={{ backgroundColor: "#f0f4f8" }}>
               <th>{t('delete_text')}</th>
               <th>{t('update_text')}</th>
-              <th>{t('container_text')}</th>
+              <th>{t('containers_text')}</th>
               </tr>
           </thead>
           <tbody>
@@ -193,6 +190,9 @@ const AddContainerPage = () => {
           </tbody>
         </table>
       </div>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
 
       {/* Confirmation POPUP */}
       <ConfirmDialog

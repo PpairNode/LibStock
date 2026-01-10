@@ -85,9 +85,6 @@
 
   "handling": "GESTION",
   "category_name": "NOM",
-
-  "container_head_text": "GESTION DES CAISSONS",
-  "container_text": "CAISSON",
   "container_name": "NOM",
 
   "confirm_delete_container_title": "Supprimer le caisson ?",

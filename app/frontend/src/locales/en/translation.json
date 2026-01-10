@@ -85,9 +85,6 @@
 
   "handling": "MANAGE",
   "category_name": "NAME",
-
-  "container_head_text": "MANAGE CONTAINERS",
-  "container_text": "CONTAINER",
   "container_name": "NAME",
 
   "confirm_delete_container_title": "Delete Container?",
