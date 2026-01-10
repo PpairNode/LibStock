@@ -149,7 +149,7 @@ const SummaryPage = () => {
           </div>
           <div className="total-card">
             <span className="total-label">{t('total_value')}</span>
-            <span className="total-value">${totalValue.toFixed(2)}</span>
+            <span className="total-value">{totalValue.toFixed(2)}{t('currency')}</span>
           </div>
           <div className="total-card">
             <span className="total-label">{t('total_containers')}</span>
@@ -186,7 +186,7 @@ const SummaryPage = () => {
                   </div>
                   <div className="stat-row stat-row-highlight">
                     <span className="stat-label">{t('value')}</span>
-                    <span className="stat-value">${container.totalValue.toFixed(2)}</span>
+                    <span className="stat-value">{container.totalValue.toFixed(2)}{t('currency')}</span>
                   </div>
 
                   {/* Chart for this container */}
@@ -210,7 +210,7 @@ const SummaryPage = () => {
                                     const value = context.parsed || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = ((value / total) * 100).toFixed(1);
-                                    return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+                                    return `${label}: ${value.toFixed(2)}${t('currency')} (${percentage}%)`;
                                   }
                                 }
                               }
