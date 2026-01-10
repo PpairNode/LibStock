@@ -186,7 +186,7 @@ const DashboardPage = () => {
             localStorage.removeItem("selectedContainer");
             localStorage.removeItem("selectedCategory");
             setSelectedContainer(null);
-            setSelectedCategory('');
+            setSelectedCategory(null);
           }
         }
 
@@ -198,6 +198,12 @@ const DashboardPage = () => {
 
     fetchContainers();
   }, [navigate]);
+
+  const handleContainerChange = (e) => {
+    const value = e.target.value;
+    setSelectedContainer(value);
+    setSelectedCategory(t('selected_category_all'));
+  };
   
   const filteredItems = items.filter((item) => {
     const matchesCategory = selectedCategory === t('selected_category_all') || item.category === selectedCategory;
@@ -284,7 +290,7 @@ const DashboardPage = () => {
           <select
             id="containerFilter"
             value={selectedContainer || ""}
-            onChange={(e) => setSelectedContainer(e.target.value)}
+            onChange={handleContainerChange}
           >
             <option value="" disabled>
               {t('container_selection_text')}
