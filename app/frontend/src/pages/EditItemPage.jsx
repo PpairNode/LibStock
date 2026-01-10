@@ -258,7 +258,7 @@ const EditItemPage = () => {
             <label htmlFor="image">{t('item_image')}</label>
             <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} />
             {uploading && <p>{t('uploading')}...</p>}
-            {formData.image_path && <p>✅ {t('uploaded')}</p>}
+            {formData.image_path && <p>{t('uploaded')}</p>}
           </div>
 
           <button type="submit" className="nav-button">{t('edit_text')}</button>

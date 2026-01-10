@@ -46,23 +46,17 @@ const AddItemPage = () => {
   
   // Handle image selection and convert to base64
   const handleImageChange = (e) => {
-    console.log("1. handleImageChange called"); // DEBUG
     const file = e.target.files[0];
-    console.log("2. File:", file); // DEBUG
-    
     if (!file) {
-      console.log("3. No file selected");
       return;
     }
     
     setLoading(true);
     setError(null);
-    console.log("4. Starting validation");
 
     // Validate file type
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
     if (!validTypes.includes(file.type)) {
-      console.log("5. Invalid type:", file.type);
       setError(t('invalid_image_type'));
       setLoading(false);
       return;
@@ -71,44 +65,33 @@ const AddItemPage = () => {
     // Validate file size (16MB max)
     const maxSize = 16 * 1024 * 1024; // 16MB
     if (file.size > maxSize) {
-      console.log("6. File too large:", file.size);
       setError(t('image_too_large'));
       setLoading(false);
       return;
     }
 
-    console.log("7. Starting FileReader");
     try {
       const reader = new FileReader();
       
       reader.onloadend = () => {
-        console.log("8. FileReader onloadend triggered");
         const base64String = reader.result.split(',')[1];
         const extension = '.' + file.name.split('.').pop().toLowerCase();
-        
-        console.log("9. Base64 length:", base64String.length);
-        console.log("10. Extension:", extension);
-        console.log("11. Full result preview:", reader.result.substring(0, 100));
         
         setImageData(base64String);
         setImageExtension(extension);
         setImagePreview(reader.result);
         
-        console.log("12. States should be set now");
         setSuccess(t('image_loaded'));
         setLoading(false);
       };
       
       reader.onerror = (error) => {
-        console.log("13. FileReader ERROR:", error);
         setError(t('image_load_failed'));
         setLoading(false);
       };
       
-      console.log("14. Calling readAsDataURL");
       reader.readAsDataURL(file);
     } catch (err) {
-      console.error("15. CATCH ERROR:", err);
       setError(t('image_load_failed'));
       setLoading(false);
     }
