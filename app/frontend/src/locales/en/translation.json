@@ -15,6 +15,7 @@
   "update_text": "MOD",
   "containers_text": "CONTAINERS",
   "categories_text": "CATEGORIES",
+  "summary_text": "SUMMARY",
 
   "add_new_item_text": "ADD ITEM",
   "edit_item_text": "EDIT ITEM",
@@ -82,8 +83,7 @@
   "username": "Username",
   "password": "Password",
 
-  "category_head_text": "MANAGE CATEGORIES",
-  "category_text": "CATEGORY",
+  "handling": "MANAGE",
   "category_name": "NAME",
 
   "container_head_text": "MANAGE CONTAINERS",
@@ -104,5 +104,16 @@
   "import_strategy": "Import strategy",
   "import_strategy_skip": "skip",
   "import_strategy_rename": "rename",
-  "import_strategy_replace": "replace"
+  "import_strategy_replace": "replace",
+
+  "summary_title": "Summary",
+  "total_items": "Total Items",
+  "total_containers": "Total Containers",
+  "containers_breakdown": "Containers Breakdown",
+  "items": "Items",
+  "categories": "Categories",
+  "value": "Value",
+  "value_by_category": "Value by Category",
+  "error_loading_summary": "Error loading summary",
+  "uncategorized": "Uncategorized"
 }

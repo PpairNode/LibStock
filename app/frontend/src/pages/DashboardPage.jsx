@@ -262,6 +262,7 @@ const DashboardPage = () => {
               <strong>{t('export')}</strong>
             </Link>
             <Link to="/import" className="nav-button"><strong>{t('import')}</strong></Link>
+            <Link to="/summary" className="nav-button"><strong>{t('summary_text')}</strong></Link>
         </div>
       </div>
 

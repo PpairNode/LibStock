@@ -29,7 +29,7 @@ const AddCategoryPage = () => {
 
     try {
       await axios.post(`/container/${containerId}/category/add`, { name });
-      setSuccess("Category added successfully.");
+      setSuccess(`Category added successfully: \`${name}\``);
       const res = await axios.get(`/container/${containerId}/categories`);
       setCategories(res.data);
       setName("")
@@ -110,11 +110,8 @@ const AddCategoryPage = () => {
 
   return (
     <div className="container">
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
-      
       <div style={{ marginBottom: "1rem" }}>
-        <h2>{t('category_head_text')}</h2><br/>
+        <h2>{t('handling')} {t('categories_text')}</h2><br/>
         <form onSubmit={handleSubmit} className="item-form-grid">
           <div className="form-group">
             <div className="form-row">
@@ -139,7 +136,7 @@ const AddCategoryPage = () => {
               <tr style={{ backgroundColor: "#f0f4f8" }}>
               <th>{t('delete_text')}</th>
               <th>{t('update_text')}</th>
-              <th>{t('category_text')}</th>
+              <th>{t('categories_text')}</th>
               </tr>
           </thead>
           <tbody>
@@ -195,6 +192,9 @@ const AddCategoryPage = () => {
           </tbody>
         </table>
       </div>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
 
       {/* Confirmation POPUP */}
       <ConfirmDialog

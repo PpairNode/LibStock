@@ -5,7 +5,7 @@
   "logged_in_as": "Connecté : ",
   "not_logged_in": "Non connecté",
   "login": "CONNEXION",
-  "logout": "DECONNEXION",
+  "logout": "DÉCONNEXION",
   "home": "ACCUEIL",
 
   "current_time_text": "Heure locale à",
@@ -14,15 +14,16 @@
   "delete_text": "SUP",
   "update_text": "MOD",
   "containers_text": "CAISSONS",
-  "categories_text": "CATEGORIES",
+  "categories_text": "CATÉGORIES",
+  "summary_text": "RÉSUMÉ",
 
   "add_new_item_text": "AJOUT OBJET",
-  "edit_item_text": "EDITION OBJET",
+  "edit_item_text": "ÉDITION OBJET",
   "item_text": "OBJET",
   "edit_text": "EDITER",
-  "item_owner": "PROPRIETAIRE",
+  "item_owner": "PROPRIÉTAIRE",
   "item_name": "TITRE",
-  "item_serie": "SERIE",
+  "item_serie": "SÉRIE",
   "item_description": "DESCRIPTION",
   "item_value": "VALEUR",
   "item_date_created": "PARUTION",
@@ -32,7 +33,7 @@
   "item_tags": "TAGS (séparateur virgule)",
   "item_tags_simple": "TAGS",
   "item_image": "IMAGE",
-  "item_category": "CATEGORIE",
+  "item_category": "CATÉGORIE",
   "item_category_select": "Sélection de la catégorie",
   "item_comment": "COMMENTAIRE",
   "item_condition": "CONDITION",
@@ -82,8 +83,7 @@
   "username": "Identifiant",
   "password": "Mot de passe",
 
-  "category_head_text": "GESTION DES CATEGORIES",
-  "category_text": "CATEGORIE",
+  "handling": "GESTION",
   "category_name": "NOM",
 
   "container_head_text": "GESTION DES CAISSONS",
@@ -104,5 +104,16 @@
   "import_strategy": "Stratégie d'importation",
   "import_strategy_skip": "passer",
   "import_strategy_rename": "renommer",
-  "import_strategy_replace": "remplacer"
+  "import_strategy_replace": "remplacer",
+
+  "summary_title": "Résumé",
+  "total_items": "Total d'objets",
+  "total_containers": "Total de caissons",
+  "containers_breakdown": "Répartition par caisson",
+  "items": "Objets",
+  "categories": "Catégories",
+  "value": "Valeur",
+  "value_by_category": "Valeur par catégorie",
+  "error_loading_summary": "Erreur lors du chargement du résumé",
+  "uncategorized": "Non catégorisé"
 }
