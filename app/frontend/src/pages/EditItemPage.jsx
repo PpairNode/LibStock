@@ -5,6 +5,7 @@ import "./AddItemPage.css";
 import "../components/Form.css";
 import { useTranslation } from 'react-i18next';
 import { getConditionLabel, CONDITIONS } from '../utils/TranslationHelper';
+import getPublicImageUrl from "../utils/Media";
 
 
 const EditItemPage = () => {
@@ -24,8 +25,6 @@ const EditItemPage = () => {
     location: "",
     creator: "",
     tags: "",
-    image: null,
-    image_path: "",
     category: "",
     comment: "",
     condition: "",
@@ -33,8 +32,13 @@ const EditItemPage = () => {
     number: 1,
     edition: "",
   });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageData, setImageData] = useState(null);
+  const [imageExtension, setImageExtension] = useState(null);
+  const [existingImagePath, setExistingImagePath] = useState(null);
   const [error, setError] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [success, setSuccess] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Fetch item data and categories on mount
   useEffect(() => {
@@ -52,8 +56,6 @@ const EditItemPage = () => {
           location: item.location || "",
           creator: item.creator || "",
           tags: item.tags?.join(", ") || "",
-          image: null,
-          image_path: item.image_path || "",
           category: item.category_id || "",
           comment: item.comment || "",
           condition: item.condition || "",
@@ -61,14 +63,17 @@ const EditItemPage = () => {
           number: item.number || 1,
           edition: item.edition || "",
         });
+
+        // Load existing image preview
+        if (item.image_path && item.image_path !== "not-image.png") {
+          setExistingImagePath(item.image_path);
+          setImagePreview(`${item.image_path}`);
+        }
       } catch (err) {
         console.error("Full error object:", err);
         console.error("Error response:", err.response?.data);
         console.error("Error status:", err.response?.status);
-        navigate("/error", { state: { message: `Error fetching item: ${err.response?.data?.message || err.message}` }});
-
-        // console.error("Error fetching item for update:", err.message);
-        // navigate("/error", { state: { message: `Error fetching item: ${err.message}` }});
+        navigate("/error", { state: { message: `${t('error_fetching_item')}: ${err.response?.data?.message || err.message}` }});
       }
     };
 
@@ -91,7 +96,7 @@ const EditItemPage = () => {
       fetchItem();
       fetchCategories();
     }
-  }, [containerId, itemId, navigate, today]);
+  }, [containerId, itemId, navigate, today, t]);
 
   // Fetch container metadata separately
   useEffect(() => {
@@ -103,7 +108,6 @@ const EditItemPage = () => {
         setContainer(res.data);
       } catch (err) {
         console.error("Error fetching container:", err.message);
-        // Don't navigate to error page, container metadata is optional
       }
     };
 
@@ -115,58 +119,106 @@ const EditItemPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle image selection and immediate upload
-  const handleImageChange = async (e) => {
+  // Handle image selection and convert to base64
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    setUploading(true);
+    
+    setLoading(true);
     setError(null);
 
-    const formDataImg = new FormData();
-    formDataImg.append("image", file);
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      setError(t('invalid_image_type'));
+      setLoading(false);
+      return;
+    }
+
+    // Validate file size (16MB max)
+    const maxSize = 16 * 1024 * 1024; // 16MB
+    if (file.size > maxSize) {
+      setError(t('image_too_large'));
+      setLoading(false);
+      return;
+    }
 
     try {
-      const response = await axios.post("/upload/image", formDataImg, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-        image_path: response.data.image_path,
-      }));
+      const reader = new FileReader();
+      
+      reader.onloadend = () => {
+        const base64String = reader.result.split(',')[1];
+        const extension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        setImageData(base64String);
+        setImageExtension(extension);
+        setImagePreview(reader.result);
+        setExistingImagePath(null); // Clear existing image reference
+        
+        setSuccess(t('image_loaded'));
+        setLoading(false);
+      };
+      
+      reader.onerror = () => {
+        setError(t('image_load_failed'));
+        setLoading(false);
+      };
+      
+      reader.readAsDataURL(file);
     } catch (err) {
-      console.error("Image upload failed:", err);
-      setError("Image upload failed. Please try again.");
-    } finally {
-      setUploading(false);
+      console.error("Image loading failed:", err);
+      setError(t('image_load_failed'));
+      setLoading(false);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImageData(null);
+    setImageExtension(null);
+    setImagePreview(null);
+    setExistingImagePath(null);
+    setSuccess(null);
+    
+    // Reset file input
+    const fileInput = document.getElementById('image');
+    if (fileInput) fileInput.value = '';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
 
     const updatedItem = {
       ...formData,
       tags: formData.tags.split(",").map(tag => tag.trim()).filter(Boolean),
-      image_path: formData.image_path
     };
+
+    // Include new image if uploaded
+    if (imageData) {
+      updatedItem.image_data = imageData;
+      updatedItem.image_extension = imageExtension;
+    } else if (existingImagePath) {
+      // Keep existing image
+      updatedItem.image_path = existingImagePath;
+    }
 
     try {
       await axios.post(`/container/${containerId}/item/update/${itemId}`, updatedItem);
-      navigate("/dashboard");
+      setSuccess(t('item_updated_success'));
+      
+      // Redirect after short delay
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
     } catch (err) {
       console.error("Update failed:", err.message);
-      setError("Failed to update item. Please try again.");
+      setError(`${t('item_update_failed')}: ${err.response?.data?.error || err.message}`);
     }
   };
 
   return (
     <div className="container">
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
       <h2>{t('edit_item_text')} <span style={{ color: "grey" }}>({t('containers_text')}: {container?.name || containerId})</span></h2>
       <form onSubmit={handleSubmit} className="item-form-grid">
         <div className="form-group">
@@ -192,7 +244,7 @@ const EditItemPage = () => {
 
           <div className="form-row">
             <label htmlFor="value">{t('item_value')}*</label>
-            <input id="value" name="value" type="number" value={formData.value} onChange={handleChange} required />
+            <input id="value" name="value" type="number" step="0.01" value={formData.value} onChange={handleChange} required />
           </div>
 
           <div className="form-row">
@@ -212,18 +264,18 @@ const EditItemPage = () => {
 
           <div className="form-row">
             <label htmlFor="tags">{t('item_tags')}</label>
-            <input id="tags" name="tags" value={formData.tags} onChange={handleChange} />
+            <input id="tags" name="tags" value={formData.tags} onChange={handleChange} placeholder={t('tags_placeholder')} />
           </div>
 
           <div className="form-row">
             <label htmlFor="category">{t('item_category')}*</label>
             <select id="category" name="category" value={formData.category} onChange={handleChange} required>
               <option value="">-- {t('item_category_select')} --</option>
-                {categories.map((cat, idx) => (
-                  <option key={idx} value={cat._id}>
-                      {cat.name}
-                  </option>
-                ))}
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -256,14 +308,84 @@ const EditItemPage = () => {
 
           <div className="form-row">
             <label htmlFor="image">{t('item_image')}</label>
-            <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} />
-            {uploading && <p>{t('uploading')}...</p>}
-            {formData.image_path && <p>{t('uploaded')}</p>}
+            <input 
+              type="file" 
+              id="image" 
+              name="image" 
+              accept="image/png,image/jpeg,image/jpg,image/gif" 
+              onChange={handleImageChange}
+            />
+            {loading && <p>{t('loading_image')}...</p>}
+            {imagePreview && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                <span style={{ fontSize: '14px' }}>{t('image_ready')}</span>
+                <button 
+                  type="button" 
+                  onClick={handleRemoveImage}
+                  style={{
+                    padding: '5px 10px',
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  {t('remove_image')}
+                </button>
+              </div>
+            )}
           </div>
 
-          <button type="submit" className="nav-button">{t('edit_text')}</button>
+          <button type="submit" className="nav-button" disabled={loading}>
+            {loading ? t('loading') : t('edit_text')}
+          </button>
+
+          {/* LOG Section */}
+          {(error || success) && (
+            <div style={{
+              marginTop: '20px',
+              padding: '15px',
+              borderRadius: '8px',
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #dee2e6'
+            }}>
+              {t('log')}
+              {error && <p style={{ color: "#dc3545", margin: '5px 0', fontSize: '14px' }}>{error}</p>}
+              {success && <p style={{ color: "#28a745", margin: '5px 0', fontSize: '14px' }}>{success}</p>}
+            </div>
+          )}
         </div>
       </form>
+
+      {/* Image preview OUTSIDE the form-group */}
+      {imagePreview && (
+        <div style={{ 
+          marginTop: '5px',
+          padding: '5px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          textAlign: 'center'
+        }}>
+          <h3 style={{ marginBottom: '15px', fontSize: '16px', color: '#495057' }}>
+            {t('image_preview')}
+          </h3>
+          <img 
+            src={getPublicImageUrl(imagePreview)}
+            alt="Preview" 
+            style={{ 
+              maxWidth: '200px', 
+              maxHeight: '200px', 
+              objectFit: 'contain',
+              border: '2px solid #dee2e6',
+              borderRadius: '8px',
+              padding: '5px',
+              backgroundColor: 'white'
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

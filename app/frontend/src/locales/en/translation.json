@@ -60,6 +60,9 @@
   "item_add_failed": "Item could not be added",
   "image_preview": "Image preview",
   "log": "LOG",
+  "error_fetching_item": "Error fetching item",
+  "item_updated_success": "Item updated successfully",
+  "item_update_failed": "Item update failed",
 
   "dashboard": "DASHBOARD",
   "no_item_selected": "No item selected. Click a row to view details.",

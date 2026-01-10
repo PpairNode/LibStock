@@ -60,6 +60,9 @@
   "item_add_failed": "Ajout de l'objet a échoué",
   "image_preview": "Aperçu de l'image",
   "log": "LOG",
+  "error_fetching_item": "Erreur de récupération de l'objet",
+  "item_updated_success": "Objet modifié avec succès",
+  "item_update_failed": "Modification de l'objet échouée",
 
   "dashboard": "TABLEAU DE BORD",
   "no_item_selected": "Aucun objet sélectionné. Cliquez sur une ligne pour accéder aux détails.",
