@@ -16,6 +16,8 @@
   "containers_text": "CONTAINERS",
   "categories_text": "CATEGORIES",
   "summary_text": "SUMMARY",
+  "select_all": "SELECT ALL",
+  "include_images": "Include images",
 
   "add_new_item_text": "ADD ITEM",
   "edit_item_text": "EDIT ITEM",

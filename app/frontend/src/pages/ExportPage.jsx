@@ -105,7 +105,7 @@ function ExportPage() {
       {error && <div className="error-message">{error}</div>}
 
       <div className="export-options">
-        <h2>{t('selection')} {t('container_text')}</h2>
+        <h2>{t('selection')} {t('containers_text')}</h2>
         
         <div className="select-all">
           <label>
@@ -114,7 +114,7 @@ function ExportPage() {
               checked={selectedContainers.length === containers.length && containers.length > 0}
               onChange={handleSelectAll}
             />
-            {t('select_all') || 'Select All'}
+            {t('select_all')}
           </label>
         </div>
 
