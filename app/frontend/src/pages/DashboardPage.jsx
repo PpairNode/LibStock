@@ -280,7 +280,7 @@ const DashboardPage = () => {
 
       <div className="filter-bar">
         <div className="filter-group">
-          <label htmlFor="categoryFilter">{t('container_text')}</label>
+          <label htmlFor="categoryFilter">{t('containers_text')}</label>
           <select
             id="containerFilter"
             value={selectedContainer || ""}
@@ -298,7 +298,7 @@ const DashboardPage = () => {
         </div>
 
         <div className="filter-group">
-          <label htmlFor="categoryFilter">{t('category_text')}</label>
+          <label htmlFor="categoryFilter">{t('categories_text')}</label>
           <select
             id="categoryFilter"
             value={selectedCategory}

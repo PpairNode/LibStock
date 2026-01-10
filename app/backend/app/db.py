@@ -26,4 +26,9 @@ def get_mongo_client():
 client = get_mongo_client()
 db = client["app"]
 # Make sure categories collection is unique on name
-db.categories.create_index("name", unique=True, collation={"locale": "en", "strength": 2})
+db.categories.create_index(
+    [("name", 1), ("container_id", 1)],
+    unique=True,
+    name="unique_category_per_container",
+    collation={"locale": "en", "strength": 2}
+)
